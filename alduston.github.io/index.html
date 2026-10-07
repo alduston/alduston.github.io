@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aloïs Duston</title>
+  <meta name="description" content="Aloïs Duston — PhD student at the Oden Institute, UT Austin. Score-based generative modeling, Bayesian inverse problems, and scientific machine learning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="name" href="index.html">Aloïs Duston</a>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="research.html">Research</a>
+      <a href="papers.html">Papers</a>
+      <a href="cv.html">CV</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <!-- Replace with a real photo: save it as assets/img/profile.jpg and change src below. -->
+    <img class="portrait" src="assets/img/profile.svg" alt="Aloïs Duston">
+    <div>
+      <h1>Aloïs Duston</h1>
+      <div class="role">
+        PhD student, Computational Science, Engineering, and Mathematics<br>
+        <a href="https://oden.utexas.edu/">Oden Institute for Computational Engineering and Sciences</a>, UT Austin
+      </div>
+      <p>
+        I work at the intersection of score-based generative modeling, Bayesian inverse problems,
+        and scientific machine learning, advised by
+        <a href="https://oden.utexas.edu/people/directory/Tan-Bui/">Tan Bui-Thanh</a> in the
+        <a href="https://phoices.netlify.app/">PHO-ICES group</a>.
+      </p>
+      <p>
+        Much of my work is about estimating the scores that diffusion models need when the usual
+        data-driven route is noisy or unavailable: blending denoising and target-score identities
+        with variance-optimal gates, rebuilding scores iteratively to sample posteriors of
+        PDE-constrained inverse problems, and using the analytic structure of a VAE encoder to
+        train latent diffusion models end to end.
+      </p>
+      <div class="links">
+        <a href="mailto:alois.duston@utexas.edu">Email</a>
+        <a href="https://scholar.google.com/citations?user=nfPSQykAAAAJ&amp;hl=en">Google Scholar</a>
+        <a href="https://github.com/alduston">GitHub</a>
+        <a href="https://oden.utexas.edu/people/directory/Alois-Duston/">Oden profile</a>
+        <a href="cv.html">CV</a>
+      </div>
+    </div>
+  </section>
+
+  <h2>Research</h2>
+  <div class="cards">
+    <div class="card">
+      <img src="assets/img/gad_thumb.png" alt="Darcy-flow posterior means: ground truth, GAD rounds 1 and 3, MALA">
+      <h3>Gated Action Dissipation <span class="tag wip">In progress</span></h3>
+      <p>Iterative diffusion transport for Bayesian inverse problems, rebuilt from target derivatives and an unweighted sample bank.</p>
+      <a class="more" href="research.html#gad">Project page →</a>
+    </div>
+    <div class="card">
+      <img src="assets/img/csem_field.png" alt="Gaussian-field latent diffusing under the OU process">
+      <h3>End-to-end latent diffusion (CSEM) <span class="tag wip">In progress</span></h3>
+      <p>An analytic component-score target that lets the VAE encoder and the diffusion prior train jointly.</p>
+      <a class="more" href="research.html#csem">Project page →</a>
+    </div>
+    <div class="card">
+      <img src="assets/img/lfgi_gate.png" alt="Score-signal variance for scalar and matrix gates">
+      <h3>Laplace–Fisher Gate Identities <span class="tag preprint">Preprint</span></h3>
+      <p>The variance-optimal matrix gate for blending Tweedie and target-score estimators.</p>
+      <a class="more" href="research.html#lfgi">Project page →</a>
+    </div>
+    <div class="card">
+      <img src="assets/img/tsi_blend.png" alt="Tweedie and target-score variance across diffusion time">
+      <h3>Variance-reduced diffusion sampling <span class="tag preprint">Preprint</span></h3>
+      <p>Self-normalized target-score estimators and state–time dependent blending with Tweedie.</p>
+      <a class="more" href="research.html#tsi">Project page →</a>
+    </div>
+  </div>
+
+  <h2>News</h2>
+  <ul class="plain news">
+    <li><span class="date">Jun 2026</span> Preprint: <a href="https://arxiv.org/abs/2606.25169"><i>Laplace–Fisher Gate Identities for Optimal Matrix-Gated Blended Score Estimation</i></a>.</li>
+    <li><span class="date">Jan 2026</span> Preprint: <a href="https://arxiv.org/abs/2601.01594"><i>Variance-Reduced Diffusion Sampling via Target Score Identity</i></a>, submitted to SIAM Journal on Scientific Computing.</li>
+  </ul>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Aloïs Duston · Oden Institute, The University of Texas at Austin</div>
+</footer>
+</body>
+</html>

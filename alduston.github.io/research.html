@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research · Aloïs Duston</title>
+  <meta name="description" content="Research projects of Aloïs Duston: diffusion-based sampling for Bayesian inverse problems and end-to-end latent diffusion.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="name" href="index.html">Aloïs Duston</a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="research.html" class="active">Research</a>
+      <a href="papers.html">Papers</a>
+      <a href="cv.html">CV</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Research</h1>
+  <p class="theme-intro">
+    Diffusion models need the score of every noise-perturbed marginal along the forward process.
+    My projects ask how to get those scores when the standard ingredient is missing or noisy:
+    when the target is an unnormalized posterior with no samples, or when the latent space of a
+    generative model is itself being learned.
+  </p>
+
+  <!-- =========================================================== -->
+  <h2>Diffusion sampling for Bayesian inverse problems</h2>
+  <p class="theme-intro">
+    In a Bayesian inverse problem the target density is known up to a constant, together with its
+    score and (Gauss–Newton) curvature, but there are no target samples. These three projects build
+    score estimators from that information and use them to transport samples to the posterior.
+  </p>
+
+  <section class="project" id="tsi">
+    <h3>Variance-reduced diffusion sampling via the Target Score Identity <span class="tag preprint">Preprint</span></h3>
+    <div class="meta">with Tan Bui-Thanh · submitted to SIAM Journal on Scientific Computing ·
+      <a href="https://arxiv.org/abs/2601.01594">arXiv:2601.01594</a></div>
+    <p>
+      The noisy marginal score can be written two ways: through Tweedie's denoising identity, or
+      through the Target Score Identity (TSI), a conditional expectation of the clean target score
+      under the forward diffusion. The two particle-wise estimators have complementary variance:
+      Tweedie's is large at small diffusion times, TSI's at large times.
+    </p>
+    <ul>
+      <li>A plug-and-play, nonparametric self-normalized importance sampling estimator of the TSI score that works with standard reverse-time solvers.</li>
+      <li>A variance-minimizing, state- and time-dependent blend of the Tweedie and TSI estimators, with an analysis of their anti-correlation.</li>
+      <li>A data-only extension using locally fitted proxy scores, and a likelihood-tilting extension to Bayesian inverse problems.</li>
+      <li>A Critic–Gate distillation scheme that amortizes the blending coefficient into a neural gate.</li>
+    </ul>
+    <figure>
+      <img src="assets/img/tsi_blend.png" alt="Conditional variance of Tweedie, TSI and blended score signals across diffusion time">
+      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): for a 1-D
+        two-component Gaussian mixture, the conditional variance of the Tweedie and target-score
+        particle signals crosses over in diffusion time, and the pointwise variance-optimal blend
+        sits below both.</figcaption>
+    </figure>
+  </section>
+
+  <section class="project" id="lfgi">
+    <h3>Laplace–Fisher Gate Identities for matrix-gated score estimation <span class="tag preprint">Preprint</span></h3>
+    <div class="meta">with Tan Bui-Thanh · 2026 ·
+      <a href="https://arxiv.org/abs/2606.25169">arXiv:2606.25169</a></div>
+    <p>
+      Scalar blends of the Tweedie and target-score estimators are too rigid for singular or strongly
+      anisotropic targets. Casting blended score estimation as conditional risk minimization over
+      matrix-valued gates gives the variance-optimal gate in closed form,
+    </p>
+    <p style="text-align:center">
+      G<sub>⋆</sub>(y,t) = α<sub>t</sub><sup>2</sup> ( α<sub>t</sub><sup>2</sup> I + γ<sub>t</sub> 𝔼[ H<sub>0</sub>(X<sub>0</sub>) | Y<sub>t</sub> = y ] )<sup>−1</sup>,
+      &nbsp; H<sub>0</sub> = −∇<sup>2</sup> log p<sub>0</sub>,
+    </p>
+    <p>
+      the <em>Laplace–Fisher Gate Identity</em> (LFGI): a resolvent of the conditionally averaged
+      observed information. Because the Tweedie–TSI disagreement has conditional mean zero, the gate
+      changes the estimator's variance without changing its expectation.
+    </p>
+    <ul>
+      <li>The Gaussian special case, and finite-reference consistency and stability bounds for estimating the gate from weighted reference samples.</li>
+      <li>An application to normalized posterior-density evaluation for Bayesian inverse problems, built from MCMC pilot samples and derivative information.</li>
+    </ul>
+    <figure>
+      <img src="assets/img/lfgi_gate.png" alt="Conditional trace variance of scalar and matrix-gated score estimators">
+      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): on a
+        2-D mixture of two thin, rotated Gaussians, the best scalar blend applies one weight in
+        every direction, while the LFGI matrix gate weights each direction by the local curvature
+        and reduces the averaged conditional trace variance by more than an order of magnitude at
+        small diffusion times.</figcaption>
+    </figure>
+  </section>
+
+  <section class="project" id="gad">
+    <h3>Gated Action Dissipation for Bayesian inverse problems <span class="tag wip">In progress</span></h3>
+    <div class="meta">with Tan Bui-Thanh · manuscript in preparation</div>
+    <p>
+      Gated Action Dissipation (GAD) is an iterative, unweighted transport: after each sampling
+      round it rebuilds an approximate reverse-diffusion score from the current sample bank, the
+      target score, and observed-information actions, then pushes the bank through the reverse
+      SDE again. No importance weighting, resampling, or inner Markov chain is used, and the density
+      of the transported law is never needed.
+    </p>
+    <ul>
+      <li><b>A gate-independent descent criterion.</b> If the rebuilt score's error stays a strict fraction of the target/current relative score, each exact-terminal round strictly decreases forward KL to the target.</li>
+      <li><b>Which part of the relative score is observable.</b> A conditional Stein–Poisson representation writes the inaccessible relative score and the computable Tweedie/target-score disagreement as two moments of one conditional flux. Inverting the mean observed-information channel recovers exactly the current-law LFGI correction and isolates a transverse remainder.</li>
+      <li><b>An explicit error certificate.</b> The conversion error is bounded by a reverse transverse Pearson budget weighted by the target-posterior covariance of the gated particle signal.</li>
+      <li><b>Current work:</b> proving that this budget is uniformly subcritical on the range of the rebuilt transport, which would close the population convergence theorem.</li>
+    </ul>
+    <figure>
+      <img src="assets/img/gad_darcy.png" alt="Darcy log-permeability: ground truth, posterior means, errors, standard deviations and samples">
+      <figcaption>Darcy log-permeability inversion (32 coefficients, pressure sensors in green):
+        posterior mean, pointwise error, posterior standard deviation and one sample after GAD
+        rounds 1 and 3, compared with a MALA baseline run at a matched budget of expensive
+        PDE/derivative evaluations. Draft result for a single data realization.</figcaption>
+    </figure>
+    <div class="fig-row">
+      <figure>
+        <img src="assets/img/gad_ns_pca.png" alt="Navier–Stokes posterior samples in principal-component coordinates">
+        <figcaption>Navier–Stokes initial-vorticity inversion: sample banks in the leading principal
+          components, with the true coefficients marked in cyan. Round 3 moves the bank toward the
+          truth; the budget-matched MALA chains have not mixed.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/gad_ess.png" alt="Mean conditional reference ESS across diffusion time">
+        <figcaption>Mean effective sample size of the conditional reference weights across
+          diffusion time, rounds 1 and 3 (Navier–Stokes). Rebuilding increases usable support over
+          much of the diffusion interval.</figcaption>
+      </figure>
+    </div>
+    <details>
+      <summary>Navier–Stokes reconstructions</summary>
+      <figure>
+        <img src="assets/img/gad_navier_stokes.png" alt="Navier–Stokes initial vorticity: ground truth, posterior means, errors and samples">
+        <figcaption>Initial-vorticity reconstruction: ground truth, posterior means, pointwise
+          errors, posterior standard deviations and representative samples for GAD rounds 1 and 3
+          and the budget-matched MALA baseline. Draft result for a single data realization.</figcaption>
+      </figure>
+    </details>
+  </section>
+
+  <!-- =========================================================== -->
+  <h2>Latent generative modeling</h2>
+
+  <section class="project" id="csem">
+    <h3>Component Score Expectation Matching: end-to-end latent diffusion <span class="tag wip">In progress</span></h3>
+    <div class="meta">technical report · experiments in progress</div>
+    <p>
+      Latent diffusion models are usually trained in two stages: a VAE first, then a score network
+      on its frozen latents with denoising score matching. That discards the Gaussian uncertainty
+      the encoder already predicts. Viewing the aggregate latent as a <em>Gaussian field</em>, a
+      continuous mixture of encoder posteriors, every diffused component has an analytic score, and
+      the aggregate score is their conditional expectation given the noisy latent.
+    </p>
+    <ul>
+      <li><b>A Rao–Blackwellized target.</b> Regressing onto the analytic component scores has the same optimum as denoising score matching without its auxiliary Monte Carlo noise.</li>
+      <li><b>A gradient path into the encoder.</b> The target depends analytically on the encoder mean and covariance, so the encoder and score network can be trained jointly. Naive joint training with denoising score matching instead rewards posterior collapse; CSEM removes exactly that incentive.</li>
+      <li><b>An exact information budget.</b> With physical-time weighting, the CSEM loss up to a representation horizon T<sub>K</sub> plus a componentwise boundary KL equals score-estimation error, the rate I(X; Z<sub>0</sub>), and the aggregate mismatch to N(0, I) at T<sub>K</sub>.</li>
+      <li><b>Two horizons, one family.</b> Separating T<sub>K</sub> from the sampling horizon T interpolates between a β-VAE, a standard two-stage latent diffusion model, and fully joint training.</li>
+    </ul>
+    <figure>
+      <img src="assets/img/csem_field.png" alt="Schematic of encoder posteriors diffusing under the OU process, with the two training horizons">
+      <figcaption>Schematic (toy 2-D example, not a result): encoder posteriors (blue, 2σ ellipses)
+        and their aggregate density (black contours) under the forward OU process. Encoder
+        gradients flow only on [0, T<sub>K</sub>]; the tail up to T trains the score network on
+        detached latents.</figcaption>
+    </figure>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Aloïs Duston · Oden Institute, The University of Texas at Austin</div>
+</footer>
+</body>
+</html>
