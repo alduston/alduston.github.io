@@ -1,6 +1,6 @@
 # alduston.github.io
 
-Personal academic website. Plain HTML/CSS, no build step.
+Personal academic website. Plain HTML/CSS, no build step. 
 
 ## Publish on GitHub Pages
 
