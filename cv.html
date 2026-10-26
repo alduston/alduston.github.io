@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CV · Aloïs Duston</title>
-  <meta name="description" content="Curriculum vitae of Aloïs Duston.">
+  <meta name="description" content="Curriculum vitae of Aloïs Duston: diffusion and latent generative models, score estimation, and Bayesian inverse problems.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -24,46 +24,172 @@
 </header>
 
 <main class="wrap">
-  <h1>Curriculum Vitae</h1>
-  <!-- Once you have a PDF CV, save it as assets/cv.pdf and uncomment:
-  <p><a href="assets/cv.pdf">Full CV (PDF)</a></p>
-  -->
+  <div class="cv-head">
+    <h1>Curriculum Vitae</h1>
+    <a class="cv-download" href="assets/Alois_Duston_CV.pdf">Download PDF</a>
+  </div>
+  <p class="cv-summary">
+    Ph.D. researcher developing diffusion and latent generative models, variance-reduced score
+    estimators, and samplers for Bayesian inverse problems. Combines mathematical analysis with
+    PyTorch implementation and experiments in image generation and scientific machine learning.
+  </p>
+  <div class="links">
+    <a href="mailto:alois.duston@utexas.edu">alois.duston@utexas.edu</a>
+    <a href="https://github.com/alduston">GitHub</a>
+    <a href="https://scholar.google.com/citations?user=nfPSQykAAAAJ&amp;hl=en">Google Scholar</a>
+    <a href="https://www.linkedin.com/in/alo%C3%AFs-duston-0512a819a/">LinkedIn</a>
+  </div>
 
-  <!-- TODO: fill in years in the .when spans. -->
+  <!-- ===================================================== -->
   <h2>Education</h2>
+
   <div class="cv-item">
-    <div><b>PhD, Computational Science, Engineering, and Mathematics</b><br>
-      Oden Institute, The University of Texas at Austin · advisor: Tan Bui-Thanh</div>
-    <div class="when">in progress</div>
-  </div>
-  <div class="cv-item">
-    <div><b>MS, Applied Mathematics</b><br>University of Washington</div>
-    <div class="when"></div>
-  </div>
-  <div class="cv-item">
-    <div><b>BA, Mathematics</b><br>University of Virginia</div>
-    <div class="when"></div>
+    <div><b>The University of Texas at Austin</b><br>
+      Ph.D., Computational Science, Engineering, and Mathematics<br>
+      <span class="cv-sub">Oden Institute · Advisor: Tan Bui-Thanh · CSEM Graduate Fellowship</span></div>
+    <div class="when">Sep 2024 – Present</div>
   </div>
 
-  <h2>Positions</h2>
   <div class="cv-item">
-    <div><b>Graduate Research Assistant</b><br>Oden Institute, UT Austin ·
-      <a href="https://phoices.netlify.app/">PHO-ICES group</a></div>
-    <div class="when"></div>
+    <div><b>University of Washington</b><br>
+      M.S., Applied Mathematics · GPA: 3.98/4.00<br>
+      <span class="cv-sub">Advisors: Bamdad Hosseini and J. Nathan Kutz<br>
+      Thesis: <i>Kernel Methods for Conditional Generative Modeling</i></span></div>
+    <div class="when">Sep 2022 – Dec 2023</div>
   </div>
 
-  <h2>Fellowships</h2>
   <div class="cv-item">
-    <div><b>CSEM Graduate Fellowship</b><br>Oden Institute, UT Austin</div>
-    <div class="when"></div>
+    <div><b>University of Virginia</b><br>
+      B.A., Mathematics; minor in Biology · Major GPA: 3.93/4.00</div>
+    <div class="when">Aug 2016 – May 2020</div>
   </div>
 
-  <h2>Research interests</h2>
-  <p>Score-based and diffusion generative models · Bayesian inverse problems and uncertainty
-    quantification · Monte Carlo and particle methods · scientific machine learning.</p>
+  <!-- ===================================================== -->
+  <h2>Publications and preprints</h2>
+  <ul class="plain cv-pubs">
+    <li><b>Laplace–Fisher Gate Identities for Optimal Matrix-Gated Blended Score Estimation</b><br>
+      <u>A. Duston</u> and T. Bui-Thanh. Preprint, 2026.
+      <a href="https://arxiv.org/abs/2606.25169">arXiv:2606.25169</a></li>
+    <li><b>Variance-Reduced Diffusion Sampling via Target Score Identity</b><br>
+      <u>A. Duston</u> and T. Bui-Thanh. Preprint, 2026.
+      <a href="https://arxiv.org/abs/2601.01594">arXiv:2601.01594</a>.
+      Submitted to <i>SIAM Journal on Scientific Computing</i>.</li>
+    <li><b>Quantifying Single and Dual Channel Live Imaging Data: Kymograph Analysis of Organelle Motility in Neurons</b><br>
+      L. Digilio, L. P. McMahon, <u>A. Duston</u>, C. C. Yap, and B. Winckler.
+      <i>Bio-protocol</i> 13(10), e4675, 2023.
+      <a href="https://doi.org/10.21769/BioProtoc.4675">doi:10.21769/BioProtoc.4675</a></li>
+  </ul>
 
-  <h2>Publications</h2>
-  <p>See <a href="papers.html">Papers</a> and <a href="https://scholar.google.com/citations?user=nfPSQykAAAAJ&amp;hl=en">Google Scholar</a>.</p>
+  <!-- ===================================================== -->
+  <h2>Research experience</h2>
+
+  <div class="cv-item">
+    <div><b>Research Assistant, PHO-ICES Group</b><br>
+      <span class="cv-sub">The University of Texas at Austin · Advisor: Tan Bui-Thanh</span></div>
+    <div class="when">Dec 2023 – Present</div>
+  </div>
+
+  <div class="cv-item cv-project">
+    <div><a href="research.html#csem">End-to-end latent diffusion with CSEM</a></div>
+    <div class="when"><i>Technical report; experiments ongoing</i></div>
+  </div>
+  <ul class="cv-list">
+    <li>Developed Component Score Expectation Matching: analytic supervision for jointly training a variational autoencoder and latent diffusion prior, removing auxiliary denoising noise from the target.</li>
+    <li>Implemented flat and hierarchical models in PyTorch; evaluated generation and reconstruction on Fashion-MNIST and CIFAR-10 using FID and capacity-matched comparisons.</li>
+  </ul>
+
+  <div class="cv-item cv-project">
+    <div><a href="research.html#gad">Gated Action Dissipation for Bayesian inverse problems</a></div>
+    <div class="when"><i>Manuscript in preparation</i></div>
+  </div>
+  <ul class="cv-list">
+    <li>Developed a training-free iterative diffusion sampler that rebuilds scores from target derivatives and an unweighted sample bank, without evaluating the transported density.</li>
+    <li>Established one-round Gaussian exactness and local KL decrease conditions; benchmarked Darcy and Navier–Stokes posteriors against MALA at matched PDE and derivative budgets.</li>
+  </ul>
+
+  <div class="cv-item cv-project">
+    <div><a href="research.html#tsi">Variance-reduced score estimation</a></div>
+    <div class="when"><i>Two first-author preprints</i></div>
+  </div>
+  <ul class="cv-list">
+    <li>Derived variance-optimal scalar and matrix gates for blending Tweedie and target-score estimators; established finite-reference consistency and stability bounds.</li>
+    <li>Implemented reverse-SDE and probability-flow ODE methods for sampling, normalized posterior-density evaluation, and model-evidence diagnostics in inverse problems.</li>
+  </ul>
+
+  <div class="cv-item">
+    <div><b>Research Assistant, Hosseini Research Group</b><br>
+      <span class="cv-sub">University of Washington · Advisor: Bamdad Hosseini</span></div>
+    <div class="when">Apr 2023 – Aug 2024</div>
+  </div>
+  <ul class="cv-list">
+    <li>Developed triangular kernel transport maps for conditional generative modeling and likelihood-free Bayesian inference; evaluated performance against neural generative baselines.</li>
+    <li>Derived maximum mean discrepancy (MMD) bounds for posterior approximations induced by generative priors.</li>
+  </ul>
+
+  <div class="cv-item">
+    <div><b>Research Assistant, Kutz Research Group</b><br>
+      <span class="cv-sub">University of Washington · Advisor: J. Nathan Kutz</span></div>
+    <div class="when">Jan 2023 – Aug 2024</div>
+  </div>
+  <ul class="cv-list">
+    <li>Developed latent ensemble regularization for deep autoencoders and autoencoder SINDy, improving robustness of physical-law discovery from sparse, noisy data and video.</li>
+  </ul>
+
+  <div class="cv-item">
+    <div><b>Research Assistant, Winckler Lab</b><br>
+      <span class="cv-sub">University of Virginia School of Medicine</span></div>
+    <div class="when">Dec 2020 – May 2021</div>
+  </div>
+  <ul class="cv-list">
+    <li>Built KymoMerge, a Python utility for dual-channel neuronal-image processing and statistical analysis; coauthored the published analysis protocol.</li>
+  </ul>
+
+  <!-- ===================================================== -->
+  <h2>Industry and scientific computing experience</h2>
+
+  <div class="cv-item">
+    <div><b>Computational Scientist, Research Computing</b><br>
+      <span class="cv-sub">University of Virginia · Charlottesville, VA</span></div>
+    <div class="when">Mar 2022 – Sep 2022</div>
+  </div>
+  <ul class="cv-list">
+    <li>Consulted on scientific workflow automation, parallelization, and HPC performance; supported GPU-based machine learning for image processing and bioinformatics.</li>
+    <li>Developed Bash tooling for software and container installation on the research cluster; implemented TensorFlow workflows using parallel GPU resources.</li>
+  </ul>
+
+  <div class="cv-item">
+    <div><b>Optimization Intern, Rho AI</b><br>
+      <span class="cv-sub">Charlottesville, VA</span></div>
+    <div class="when">Sep 2021 – Feb 2022</div>
+  </div>
+  <ul class="cv-list">
+    <li>Formulated supply-chain emissions reduction as a linear optimization problem using graph and matrix representations and a simplex-based solver.</li>
+    <li>Built a hierarchical software model of supply chains to evaluate configurations and identify opportunities for emissions reduction.</li>
+  </ul>
+
+  <div class="cv-item">
+    <div><b>Machine Learning Research Intern, STR</b><br>
+      <span class="cv-sub">Analytics Division · Woburn, MA</span></div>
+    <div class="when">May 2021 – Aug 2021</div>
+  </div>
+  <ul class="cv-list">
+    <li>Developed a hierarchical Bayesian classification model for Monte Carlo simulation of discrete time series; improved mean correct classification rate by 15% in geospatial forecasting.</li>
+    <li>Presented the research findings and applications in a companywide technical presentation.</li>
+  </ul>
+
+  <!-- ===================================================== -->
+  <h2>Technical skills</h2>
+  <ul class="plain cv-skills">
+    <li><b>Programming:</b> Python, Bash, MATLAB, R, SQL.</li>
+    <li><b>ML and numerical tools:</b> PyTorch, TensorFlow, scikit-learn, NumPy, SciPy, pandas, Numba, CVXPY, Matplotlib.</li>
+    <li><b>Research methods:</b> Diffusion models, variational autoencoders, latent generative models, score estimation, Bayesian inference, MCMC, optimal transport, inverse problems, uncertainty quantification.</li>
+    <li><b>Computing:</b> Linux, Git, Docker, HPC clusters, Slurm, GPU computing, experiment automation.</li>
+  </ul>
+
+  <h2>Selected graduate coursework</h2>
+  <p>Deep Learning Theory; Statistical Learning Theory; Measure-Theoretic Probability; Numerical
+    Linear Algebra; Optimization and Monte Carlo Methods; Kernel Methods; Partial Differential
+    Equations; Functional Analysis.</p>
 </main>
 
 <footer>
