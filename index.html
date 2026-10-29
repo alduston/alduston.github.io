@@ -4,11 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aloïs Duston</title>
-  <meta name="description" content="Aloïs Duston — PhD student at the Oden Institute, UT Austin. Score-based generative modeling, Bayesian inverse problems, and scientific machine learning.">
+  <meta name="description" content="Aloïs Duston — PhD student at the Oden Institute, UT Austin. Develops and trains diffusion and latent generative models, score estimators, and diffusion samplers for Bayesian inverse problems.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Aloïs Duston — generative modeling and score-based methods">
+  <meta property="og:description" content="PhD student at the Oden Institute, UT Austin: end-to-end latent diffusion (CSEM), variance-optimal score estimation, and diffusion samplers for Bayesian inverse problems.">
+  <meta property="og:url" content="https://alduston.github.io/">
+  <meta property="og:image" content="https://alduston.github.io/assets/img/og_card.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://alduston.github.io/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Aloïs Duston",
+    "url": "https://alduston.github.io/",
+    "jobTitle": "PhD student",
+    "affiliation": {"@type": "Organization", "name": "Oden Institute for Computational Engineering and Sciences, The University of Texas at Austin"},
+    "knowsAbout": ["diffusion models", "latent diffusion", "variational autoencoders", "score-based generative modeling", "Bayesian inverse problems", "scientific machine learning"],
+    "sameAs": [
+      "https://scholar.google.com/citations?user=nfPSQykAAAAJ",
+      "https://github.com/alduston",
+      "https://www.linkedin.com/in/alo%C3%AFs-duston-0512a819a/"
+    ]
+  }
+  </script>
 </head>
 <body>
 <header class="site">
@@ -25,7 +48,6 @@
 
 <main class="wrap">
   <section class="intro">
-    <!-- Replace with a real photo: save it as assets/img/profile.jpg and change src below. -->
     <img class="portrait" src="assets/img/profile.jpg" alt="Aloïs Duston">
     <div>
       <h1>Aloïs Duston</h1>
@@ -34,41 +56,72 @@
         <a href="https://oden.utexas.edu/">Oden Institute for Computational Engineering and Sciences</a>, UT Austin
       </div>
       <p>
-        I work at the intersection of score-based generative modeling, Bayesian inverse problems,
-        and scientific machine learning, advised by
+        I develop and train diffusion and latent generative models, and the score estimators and
+        samplers behind them. My work pairs mathematical analysis with PyTorch training and
+        experiments, in image generation and in scientific machine learning. I am advised by
         <a href="https://oden.utexas.edu/people/directory/Tan-Bui/">Tan Bui-Thanh</a> in the
         <a href="https://phoices.netlify.app/">PHO-ICES group</a>.
       </p>
       <p>
-        Much of my work is about estimating the scores that diffusion models need when the usual
-        data-driven route is noisy or unavailable: blending denoising and target-score identities
-        with variance-optimal gates, rebuilding scores iteratively to sample posteriors of
-        PDE-constrained inverse problems, and using the analytic structure of a VAE encoder to
-        train latent diffusion models end to end.
+        Current projects: training a VAE and its latent diffusion prior end to end with an analytic
+        score target; diffusion-based samplers for PDE-constrained Bayesian inverse problems; and
+        variance-optimal estimators that blend denoising and target-score information.
+      </p>
+      <!-- Remove or edit this line once the internship search is settled. -->
+      <p class="seeking">
+        <b>Summer 2027:</b> looking for a research internship on developing and training generative
+        models (diffusion and flow models, latent and representation learning, generative scientific ML).
       </p>
       <div class="links">
         <a href="mailto:alois.duston@utexas.edu">Email</a>
         <a href="https://scholar.google.com/citations?user=nfPSQykAAAAJ&amp;hl=en">Google Scholar</a>
         <a href="https://github.com/alduston">GitHub</a>
         <a href="https://oden.utexas.edu/people/directory/Alois-Duston/">Oden profile</a>
-        <a href="cv.html">CV</a>
+        <a href="assets/Alois_Duston_CV.pdf">CV (PDF)</a>
       </div>
     </div>
   </section>
 
-  <h2>Research</h2>
-  <div class="cards">
+  <h2>Featured project</h2>
+  <section class="feature">
+    <a href="research.html#csem"><img src="assets/img/csem_cotraining.svg" alt="CSEM co-training architecture: encoder, Gaussian posterior, decoder, a DiT score network with a factored head, and an analytic score target computed from the encoder's mean and covariance, through which gradients reach the encoder"></a>
+    <h3>End-to-end latent diffusion with CSEM <span class="tag wip">In progress</span></h3>
+    <p>
+      Latent diffusion usually trains the autoencoder first and then fits a score network to its
+      frozen latents. Component Score Expectation Matching (CSEM) trains them together. It replaces
+      the sampled-noise target of denoising score matching with the analytic score of each encoder
+      posterior. Because that target depends on the encoder's mean and covariance, the diffusion loss
+      also trains the encoder (orange path), without the latent collapse that joint training with the
+      standard denoising loss produces.
+    </p>
+    <!-- Headline numbers: Table 1 of the CSEM report (RK4, 20 steps). Update with the new runs. -->
+    <div class="stats">
+      <div class="stat">
+        <div class="label">Fashion-MNIST FID (lower is better)</div>
+        <div class="value"><span class="from">6.84 →</span> 5.03</div>
+        <div class="ctx">co-trained vs. two-stage baseline</div>
+      </div>
+      <div class="stat">
+        <div class="label">CIFAR-10 FID</div>
+        <div class="value"><span class="from">22.78 →</span> 17.15</div>
+        <div class="ctx">same backbone, sampler, and guidance</div>
+      </div>
+      <div class="stat">
+        <div class="label">Target swap alone (Fashion-MNIST)</div>
+        <div class="value"><span class="from">6.84 →</span> 6.69</div>
+        <div class="ctx">frozen autoencoder: most of the gain needs co-training</div>
+      </div>
+    </div>
+    <a class="more" href="research.html#csem">Architecture, results, and protocol →</a>
+  </section>
+
+  <h2>Other projects</h2>
+  <div class="cards three">
     <div class="card">
       <img src="assets/img/gad_thumb.png" alt="Darcy-flow posterior means: ground truth, GAD rounds 1 and 3, MALA">
-      <h3>Gated Action Dissipation <span class="tag wip">In progress</span></h3>
-      <p>Iterative diffusion transport for Bayesian inverse problems, rebuilt from target derivatives and an unweighted sample bank.</p>
+      <h3>Gated Action Dissipation <span class="tag wip">Manuscript</span></h3>
+      <p>Iterative diffusion transport for PDE-constrained Bayesian inverse problems, rebuilt each round from target derivatives and an unweighted sample bank.</p>
       <a class="more" href="research.html#gad">Project page →</a>
-    </div>
-    <div class="card">
-      <img src="assets/img/csem_field.png" alt="Gaussian-field latent diffusing under the OU process">
-      <h3>End-to-end latent diffusion (CSEM) <span class="tag wip">In progress</span></h3>
-      <p>An analytic component-score target that lets the VAE encoder and the diffusion prior train jointly.</p>
-      <a class="more" href="research.html#csem">Project page →</a>
     </div>
     <div class="card">
       <img src="assets/img/lfgi_gate.png" alt="Score-signal variance for scalar and matrix gates">

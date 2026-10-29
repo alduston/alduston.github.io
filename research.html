@@ -4,7 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Research · Aloïs Duston</title>
-  <meta name="description" content="Research projects of Aloïs Duston: diffusion-based sampling for Bayesian inverse problems and end-to-end latent diffusion.">
+  <meta name="description" content="Research of Aloïs Duston: end-to-end training of latent diffusion models (CSEM), diffusion samplers for Bayesian inverse problems, and variance-optimal score estimation.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Research · Aloïs Duston">
+  <meta property="og:description" content="End-to-end latent diffusion with CSEM, Gated Action Dissipation for Bayesian inverse problems, and variance-optimal score estimation.">
+  <meta property="og:url" content="https://alduston.github.io/research.html">
+  <meta property="og:image" content="https://alduston.github.io/assets/img/og_card.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -27,10 +33,100 @@
   <h1>Research</h1>
   <p class="theme-intro">
     Diffusion models need the score of every noise-perturbed marginal along the forward process.
-    My projects ask how to get those scores when the standard ingredient is missing or noisy:
-    when the target is an unnormalized posterior with no samples, or when the latent space of a
-    generative model is itself being learned.
+    My projects ask how to get those scores when the standard ingredient is missing or noisy: when
+    the latent space of a generative model is itself being learned, or when the target is an
+    unnormalized posterior with no samples.
   </p>
+  <p class="jump">Jump to:
+    <a href="#csem">CSEM</a> ·
+    <a href="#gad">Gated Action Dissipation</a> ·
+    <a href="#lfgi">Laplace–Fisher Gate Identities</a> ·
+    <a href="#tsi">Target Score Identity</a>
+  </p>
+
+  <!-- =========================================================== -->
+  <h2>Latent generative modeling</h2>
+
+  <section class="project" id="csem">
+    <h3>CSEM: end-to-end training of latent diffusion models <span class="tag wip">In progress</span></h3>
+    <div class="meta">technical report · experiments in progress · PyTorch
+      <!-- Add once the repository has a CSEM entry point:  · <a href="https://github.com/alduston/CSEM_LSGM">code</a> -->
+    </div>
+    <p>
+      Latent diffusion models are trained in two disconnected stages: an autoencoder first, then a
+      score network on its frozen latents. Component Score Expectation Matching (CSEM) trains both
+      together. The change is in the score target. Denoising score matching regresses onto the noise
+      that was sampled; CSEM regresses onto the analytic score of each diffused encoder posterior.
+      That target is a closed-form function of the encoder's mean and covariance, so the score loss
+      passes gradients back into the encoder.
+    </p>
+
+    <figure class="diagram">
+      <a href="assets/img/csem_cotraining.svg"><img src="assets/img/csem_cotraining.svg" alt="CSEM co-training architecture. Top lane: image, encoder, Gaussian posterior with mean and covariance, sampled latent, decoder, reconstruction loss. Bottom lane: OU noising of the latent, a DiT score network with a factored precision and mean head, and the analytic CSEM target computed from the encoder's mean and covariance. The CSEM loss compares the prediction with the target; its gradient flows back into the encoder for diffusion times below T_K."></a>
+      <figcaption>Co-training architecture. The encoder outputs a diagonal Gaussian posterior and the
+        decoder reconstructs from a sample. A DiT score network with a factored precision/mean head
+        predicts the noise on the OU-noised latent. The CSEM target (orange) is computed in closed
+        form from (μ<sub>φ</sub>, Σ<sub>φ</sub>), which opens the gradient path into the encoder on
+        diffusion times t &lt; T<sub>K</sub>. On the rest of the horizon the encoder is detached and only
+        the score network trains. In a standard two-stage LDM the target is the sampled noise ε and no
+        gradient reaches the encoder.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
+    </figure>
+
+    <h4>What the analytic target changes</h4>
+    <ul>
+      <li><b>Same optimum, less target noise.</b> The aggregate latent score is the conditional expectation of the component scores (the CSEM identity), so regressing onto them is a Rao–Blackwellized form of denoising score matching.</li>
+      <li><b>An encoder signal that does not reward collapse.</b> Joint training with the standard denoising loss lets the encoder shrink its posterior variance to drive that loss toward zero. In our runs the latent collapses within a few epochs and the learned prior becomes degenerate even though reconstructions stay sharp. CSEM removes exactly this incentive.</li>
+      <li><b>An exact training objective.</b> With physical-time weighting, the CSEM loss up to a representation horizon T<sub>K</sub>, plus an analytic terminal KL, equals score-estimation error plus the rate I(X; Z<sub>0</sub>) plus the aggregate mismatch to N(0, I) at T<sub>K</sub>. Moving T<sub>K</sub> interpolates between a β-VAE, a standard two-stage LDM, and fully joint training.</li>
+    </ul>
+
+    <h4>Results</h4>
+    <!-- Placeholder figure and numbers from the earlier configuration; replace with the updated runs. -->
+    <div class="results-row">
+      <figure>
+        <img src="assets/img/csem_fid_fmnist.png" alt="Fashion-MNIST FID versus prior-training epoch for co-trained CSEM, independent CSEM, and independent Tweedie; co-trained CSEM is lowest at every checkpoint">
+        <figcaption>Fashion-MNIST FID over prior-training epochs (RK4, 20 steps, guidance 1.5).
+          Solid: co-trained CSEM. Dashed: priors trained on an independently trained VAE, with the
+          CSEM target (blue) or the standard denoising target (red).</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table class="results">
+          <thead>
+            <tr><th>Training regime</th><th class="num">Fashion-MNIST</th><th class="num">CIFAR-10</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Two-stage, denoising target</td><td class="num">6.84</td><td class="num">22.78</td></tr>
+            <tr><td>Two-stage, CSEM target</td><td class="num">6.69</td><td class="num">21.55</td></tr>
+            <tr class="best"><td>Co-trained, CSEM</td><td class="num">5.03</td><td class="num">17.15</td></tr>
+            <tr class="floor"><td>Autoencoder reconstructions</td><td class="num">4.24</td><td class="num">14.35</td></tr>
+          </tbody>
+          <caption>FID (lower is better) at the final checkpoint: Fashion-MNIST epoch 320, CIFAR-10
+            epoch 800; RK4 probability-flow ODE, 20 steps. The last row decodes encoder posterior
+            samples and is shown as a reference floor.</caption>
+        </table>
+      </div>
+    </div>
+    <p>
+      Swapping the target while keeping the autoencoder frozen moves FID only slightly, from 6.84 to
+      6.69 on Fashion-MNIST and from 22.78 to 21.55 on CIFAR-10. Most of the improvement appears once
+      the CSEM objective is allowed to shape the encoder (5.03 and 17.15). The gain comes from a latent
+      representation that is easier to model and to integrate in few steps, not from the estimator alone.
+    </p>
+    <p class="note neutral">
+      <b>Protocol.</b> All three regimes share the score backbone, the sampler, and fixed evaluation
+      noise banks; FID uses InceptionV3 features against real test images. The guidance scale was
+      chosen for the best co-trained FID (1.5 on Fashion-MNIST, 3.0 on CIFAR-10) and then applied to
+      every regime. These results come from an earlier training configuration. Updated runs with the
+      revised architecture, the terminal-KL scale anchor, and seed-level uncertainty are in progress.
+    </p>
+
+    <h4>Implementation</h4>
+    <ul class="compact">
+      <li>PyTorch; LightningDiT score backbone with adaLN-zero conditioning on diffusion time and class label.</li>
+      <li>Factored natural-parameter output head (precision ⊙ latent − mean), read off the CSEM identity, with a gauge-fixing auxiliary regression that touches only the head.</li>
+      <li>VAE trained with reconstruction, perceptual, and PatchGAN adversarial losses; class-conditional encoder and classifier-free guidance.</li>
+      <li>Routed two-horizon gradients: the representation loss acts on [t<sub>min</sub>, T<sub>K</sub>], and the score network trains on [t<sub>min</sub>, T] with the encoder detached.</li>
+    </ul>
+  </section>
 
   <!-- =========================================================== -->
   <h2>Diffusion sampling for Bayesian inverse problems</h2>
@@ -40,29 +136,51 @@
     score estimators from that information and use them to transport samples to the posterior.
   </p>
 
-  <section class="project" id="tsi">
-    <h3>Variance-reduced diffusion sampling via the Target Score Identity <span class="tag preprint">Preprint</span></h3>
-    <div class="meta">with Tan Bui-Thanh · submitted to SIAM Journal on Scientific Computing ·
-      <a href="https://arxiv.org/abs/2601.01594">arXiv:2601.01594</a></div>
+  <section class="project" id="gad">
+    <h3>Gated Action Dissipation for Bayesian inverse problems <span class="tag wip">Manuscript</span></h3>
+    <div class="meta">with Tan Bui-Thanh · manuscript in final preparation · draft available on request</div>
     <p>
-      The noisy marginal score can be written two ways: through Tweedie's denoising identity, or
-      through the Target Score Identity (TSI), a conditional expectation of the clean target score
-      under the forward diffusion. The two particle-wise estimators have complementary variance:
-      Tweedie's is large at small diffusion times, TSI's at large times.
+      Gated Action Dissipation (GAD) samples a posterior by repeated diffusion transport. Each round
+      rebuilds the reverse-diffusion score from the current sample bank and the target's derivatives,
+      blended through the LFGI matrix gate (below) evaluated under the current law, and pushes the bank
+      through the reverse SDE again. No importance weighting, resampling, or inner Markov chain is
+      used, and the density of the transported law is never needed.
     </p>
     <ul>
-      <li>A plug-and-play, nonparametric self-normalized importance sampling estimator of the TSI score that works with standard reverse-time solvers.</li>
-      <li>A variance-minimizing, state- and time-dependent blend of the Tweedie and TSI estimators, with an analysis of their anti-correlation.</li>
-      <li>A data-only extension using locally fitted proxy scores, and a likelihood-tilting extension to Bayesian inverse problems.</li>
-      <li>A Critic–Gate distillation scheme that amortizes the blending coefficient into a neural gate.</li>
+      <li><b>Convergence theory.</b> A round decreases KL to the target whenever the rebuilt score's error stays a strict fraction of the target/current relative score, and the iteration contracts in KL for near-Gaussian targets.</li>
+      <li><b>What the iteration can see.</b> The gated action, the part of the relative score visible to the rebuilt score, decays across rounds and controls the remaining discrepancy. It also vanishes at fixed points that put the wrong weights on well-separated modes; the manuscript characterizes this failure mode with examples rather than assuming it away.</li>
+      <li><b>Experiments.</b> Darcy log-permeability and Navier–Stokes initial-vorticity inversion, compared with MALA at a matched budget of PDE and derivative evaluations.</li>
     </ul>
     <figure>
-      <img src="assets/img/tsi_blend.png" alt="Conditional variance of Tweedie, TSI and blended score signals across diffusion time">
-      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): for a 1-D
-        two-component Gaussian mixture, the conditional variance of the Tweedie and target-score
-        particle signals crosses over in diffusion time, and the pointwise variance-optimal blend
-        sits below both.</figcaption>
+      <img src="assets/img/gad_darcy.png" alt="Darcy log-permeability: ground truth, posterior means, errors, standard deviations and samples">
+      <figcaption>Darcy log-permeability inversion (32 coefficients, pressure sensors in green):
+        posterior mean, pointwise error, posterior standard deviation and one sample after GAD
+        rounds 1 and 3, compared with a MALA baseline run at a matched budget of expensive
+        PDE/derivative evaluations. Draft result for a single data realization.</figcaption>
     </figure>
+    <div class="fig-row">
+      <figure>
+        <img src="assets/img/gad_ns_pca.png" alt="Navier–Stokes posterior samples in principal-component coordinates">
+        <figcaption>Navier–Stokes initial-vorticity inversion: sample banks in the leading principal
+          components, with the true coefficients marked in cyan. Round 3 moves the bank toward the
+          truth; the budget-matched MALA chains have not mixed.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/gad_ess.png" alt="Mean conditional reference ESS across diffusion time">
+        <figcaption>Mean effective sample size of the conditional reference weights across
+          diffusion time, rounds 1 and 3 (Navier–Stokes). Rebuilding increases usable support over
+          much of the diffusion interval.</figcaption>
+      </figure>
+    </div>
+    <details>
+      <summary>Navier–Stokes reconstructions</summary>
+      <figure>
+        <img src="assets/img/gad_navier_stokes.png" alt="Navier–Stokes initial vorticity: ground truth, posterior means, errors and samples">
+        <figcaption>Initial-vorticity reconstruction: ground truth, posterior means, pointwise
+          errors, posterior standard deviations and representative samples for GAD rounds 1 and 3
+          and the budget-matched MALA baseline. Draft result for a single data realization.</figcaption>
+      </figure>
+    </details>
   </section>
 
   <section class="project" id="lfgi">
@@ -97,79 +215,28 @@
     </figure>
   </section>
 
-  <section class="project" id="gad">
-    <h3>Gated Action Dissipation for Bayesian inverse problems <span class="tag wip">In progress</span></h3>
-    <div class="meta">with Tan Bui-Thanh · manuscript in preparation</div>
+  <section class="project" id="tsi">
+    <h3>Variance-reduced diffusion sampling via the Target Score Identity <span class="tag preprint">Preprint</span></h3>
+    <div class="meta">with Tan Bui-Thanh · submitted to SIAM Journal on Scientific Computing ·
+      <a href="https://arxiv.org/abs/2601.01594">arXiv:2601.01594</a></div>
     <p>
-      Gated Action Dissipation (GAD) is an iterative, unweighted transport: after each sampling
-      round it rebuilds an approximate reverse-diffusion score from the current sample bank, the
-      target score, and observed-information actions, then pushes the bank through the reverse
-      SDE again. No importance weighting, resampling, or inner Markov chain is used, and the density
-      of the transported law is never needed.
+      The noisy marginal score can be written two ways: through Tweedie's denoising identity, or
+      through the Target Score Identity (TSI), a conditional expectation of the clean target score
+      under the forward diffusion. The two particle-wise estimators have complementary variance:
+      Tweedie's is large at small diffusion times, TSI's at large times.
     </p>
     <ul>
-      <li><b>A gate-independent descent criterion.</b> If the rebuilt score's error stays a strict fraction of the target/current relative score, each exact-terminal round strictly decreases forward KL to the target.</li>
-      <li><b>Which part of the relative score is observable.</b> A conditional Stein–Poisson representation writes the inaccessible relative score and the computable Tweedie/target-score disagreement as two moments of one conditional flux. Inverting the mean observed-information channel recovers exactly the current-law LFGI correction and isolates a transverse remainder.</li>
-      <li><b>An explicit error certificate.</b> The conversion error is bounded by a reverse transverse Pearson budget weighted by the target-posterior covariance of the gated particle signal.</li>
-      <li><b>Current work:</b> proving that this budget is uniformly subcritical on the range of the rebuilt transport, which would close the population convergence theorem.</li>
+      <li>A plug-and-play, nonparametric self-normalized importance sampling estimator of the TSI score that works with standard reverse-time solvers.</li>
+      <li>A variance-minimizing, state- and time-dependent blend of the Tweedie and TSI estimators, with an analysis of their anti-correlation.</li>
+      <li>A data-only extension using locally fitted proxy scores, and a likelihood-tilting extension to Bayesian inverse problems.</li>
+      <li>A Critic–Gate distillation scheme that amortizes the blending coefficient into a neural gate.</li>
     </ul>
     <figure>
-      <img src="assets/img/gad_darcy.png" alt="Darcy log-permeability: ground truth, posterior means, errors, standard deviations and samples">
-      <figcaption>Darcy log-permeability inversion (32 coefficients, pressure sensors in green):
-        posterior mean, pointwise error, posterior standard deviation and one sample after GAD
-        rounds 1 and 3, compared with a MALA baseline run at a matched budget of expensive
-        PDE/derivative evaluations. Draft result for a single data realization.</figcaption>
-    </figure>
-    <div class="fig-row">
-      <figure>
-        <img src="assets/img/gad_ns_pca.png" alt="Navier–Stokes posterior samples in principal-component coordinates">
-        <figcaption>Navier–Stokes initial-vorticity inversion: sample banks in the leading principal
-          components, with the true coefficients marked in cyan. Round 3 moves the bank toward the
-          truth; the budget-matched MALA chains have not mixed.</figcaption>
-      </figure>
-      <figure>
-        <img src="assets/img/gad_ess.png" alt="Mean conditional reference ESS across diffusion time">
-        <figcaption>Mean effective sample size of the conditional reference weights across
-          diffusion time, rounds 1 and 3 (Navier–Stokes). Rebuilding increases usable support over
-          much of the diffusion interval.</figcaption>
-      </figure>
-    </div>
-    <details>
-      <summary>Navier–Stokes reconstructions</summary>
-      <figure>
-        <img src="assets/img/gad_navier_stokes.png" alt="Navier–Stokes initial vorticity: ground truth, posterior means, errors and samples">
-        <figcaption>Initial-vorticity reconstruction: ground truth, posterior means, pointwise
-          errors, posterior standard deviations and representative samples for GAD rounds 1 and 3
-          and the budget-matched MALA baseline. Draft result for a single data realization.</figcaption>
-      </figure>
-    </details>
-  </section>
-
-  <!-- =========================================================== -->
-  <h2>Latent generative modeling</h2>
-
-  <section class="project" id="csem">
-    <h3>Component Score Expectation Matching: end-to-end latent diffusion <span class="tag wip">In progress</span></h3>
-    <div class="meta">technical report · experiments in progress</div>
-    <p>
-      Latent diffusion models are usually trained in two stages: a VAE first, then a score network
-      on its frozen latents with denoising score matching. That discards the Gaussian uncertainty
-      the encoder already predicts. Viewing the aggregate latent as a <em>Gaussian field</em>, a
-      continuous mixture of encoder posteriors, every diffused component has an analytic score, and
-      the aggregate score is their conditional expectation given the noisy latent.
-    </p>
-    <ul>
-      <li><b>A Rao–Blackwellized target.</b> Regressing onto the analytic component scores has the same optimum as denoising score matching without its auxiliary Monte Carlo noise.</li>
-      <li><b>A gradient path into the encoder.</b> The target depends analytically on the encoder mean and covariance, so the encoder and score network can be trained jointly. Naive joint training with denoising score matching instead rewards posterior collapse; CSEM removes exactly that incentive.</li>
-      <li><b>An exact information budget.</b> With physical-time weighting, the CSEM loss up to a representation horizon T<sub>K</sub> plus a componentwise boundary KL equals score-estimation error, the rate I(X; Z<sub>0</sub>), and the aggregate mismatch to N(0, I) at T<sub>K</sub>.</li>
-      <li><b>Two horizons, one family.</b> Separating T<sub>K</sub> from the sampling horizon T interpolates between a β-VAE, a standard two-stage latent diffusion model, and fully joint training.</li>
-    </ul>
-    <figure>
-      <img src="assets/img/csem_field.png" alt="Schematic of encoder posteriors diffusing under the OU process, with the two training horizons">
-      <figcaption>Schematic (toy 2-D example, not a result): encoder posteriors (blue, 2σ ellipses)
-        and their aggregate density (black contours) under the forward OU process. Encoder
-        gradients flow only on [0, T<sub>K</sub>]; the tail up to T trains the score network on
-        detached latents.</figcaption>
+      <img src="assets/img/tsi_blend.png" alt="Conditional variance of Tweedie, TSI and blended score signals across diffusion time">
+      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): for a 1-D
+        two-component Gaussian mixture, the conditional variance of the Tweedie and target-score
+        particle signals crosses over in diffusion time, and the pointwise variance-optimal blend
+        sits below both.</figcaption>
     </figure>
   </section>
 </main>
