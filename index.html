@@ -94,7 +94,8 @@
       also trains the encoder (orange path), without the latent collapse that joint training with the
       standard denoising loss produces.
     </p>
-    <!-- Headline numbers: Table 1 of the CSEM report (RK4, 20 steps). Update with the new runs. -->
+    <!-- Fashion-MNIST tiles: Table 1 of the CSEM report (RK4, 20 steps), pending the matched audit.
+         CIFAR-10 tile: current flat CSEM runs, epoch 800, RK4-20, CFG 2.5 (see research.html#csem). -->
     <div class="stats">
       <div class="stat">
         <div class="label">Fashion-MNIST FID (lower is better)</div>
@@ -102,9 +103,9 @@
         <div class="ctx">co-trained vs. two-stage baseline</div>
       </div>
       <div class="stat">
-        <div class="label">CIFAR-10 FID</div>
-        <div class="value"><span class="from">22.78 →</span> 17.15</div>
-        <div class="ctx">same backbone, sampler, and guidance</div>
+        <div class="label">CIFAR-10 FID, co-trained CSEM</div>
+        <div class="value">8.48</div>
+        <div class="ctx">best seed; two-seed mean 8.72&nbsp;±&nbsp;0.34</div>
       </div>
       <div class="stat">
         <div class="label">Target swap alone (Fashion-MNIST)</div>

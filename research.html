@@ -79,8 +79,37 @@
       <li><b>An exact training objective.</b> With physical-time weighting, the CSEM loss up to a representation horizon T<sub>K</sub>, plus an analytic terminal KL, equals score-estimation error plus the rate I(X; Z<sub>0</sub>) plus the aggregate mismatch to N(0, I) at T<sub>K</sub>. Moving T<sub>K</sub> interpolates between a β-VAE, a standard two-stage LDM, and fully joint training.</li>
     </ul>
 
-    <h4>Results</h4>
-    <!-- Placeholder figure and numbers from the earlier configuration; replace with the updated runs. -->
+    <h4>Results on CIFAR-10</h4>
+    <div class="table-wrap" style="margin-bottom: 16px">
+      <table class="results">
+        <thead>
+          <tr><th>Training regime</th><th>Campaign and settings</th><th class="num">FID</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best"><td>Co-trained CSEM (flat), best seed</td><td>Current runs: epoch 800, CFG 2.5</td><td class="num">8.48</td></tr>
+          <tr><td>Co-trained CSEM (flat), two-seed mean</td><td>Current runs: epoch 800, CFG 2.5</td><td class="num">8.72&nbsp;±&nbsp;0.34</td></tr>
+          <tr><td>Co-trained CSEM</td><td>Matched sweep: epoch 500, CFG 3, two-seed mean</td><td class="num">9.82</td></tr>
+          <tr><td>Independent representation, CSEM score head</td><td>Matched sweep: epoch 500, CFG 3, two-seed mean</td><td class="num">12.40</td></tr>
+          <tr><td>Independent VAE, denoising (Tweedie) target</td><td>Historical report: epoch 800, CFG 3</td><td class="num">22.78</td></tr>
+        </tbody>
+        <caption>Generation FID, lower is better. Rows come from three campaigns with different
+          settings; only rows within the same campaign form a matched comparison. Current runs:
+          full-horizon Gaussian start, temperature 1, 20-step RK4; mean ± sample SD over seeds 42 and
+          43. Matched sweep: Gaussian start, diffusion horizon T = 1.6, 10,000 samples, seeds 42 and 43.
+          Historical report: 20-step RK4.</caption>
+      </table>
+    </div>
+    <p>
+      Flat CSEM co-training reaches 8.48 FID on CIFAR-10 in the current runs, with a two-seed mean of
+      8.72 ± 0.34 (epoch 800, temperature 1, CFG 2.5). In an earlier sweep with matched settings,
+      co-training lowered FID by about 21%, from 12.40 to 9.82, against the strongest
+      independent-representation baseline: a VAE trained with no gradient from the diffusion loss,
+      sampled with the same CSEM-trained score head and taken at the best of its reported KL-weight
+      settings. The gain comes from a latent representation that is easier to model and to integrate in
+      few steps, not from the score target alone.
+    </p>
+
+    <h4>Results on Fashion-MNIST</h4>
     <div class="results-row">
       <figure>
         <img src="assets/img/csem_fid_fmnist.png" alt="Fashion-MNIST FID versus prior-training epoch for co-trained CSEM, independent CSEM, and independent Tweedie; co-trained CSEM is lowest at every checkpoint">
@@ -91,32 +120,29 @@
       <div class="table-wrap">
         <table class="results">
           <thead>
-            <tr><th>Training regime</th><th class="num">Fashion-MNIST</th><th class="num">CIFAR-10</th></tr>
+            <tr><th>Training regime</th><th class="num">FID</th></tr>
           </thead>
           <tbody>
-            <tr><td>Two-stage, denoising target</td><td class="num">6.84</td><td class="num">22.78</td></tr>
-            <tr><td>Two-stage, CSEM target</td><td class="num">6.69</td><td class="num">21.55</td></tr>
-            <tr class="best"><td>Co-trained, CSEM</td><td class="num">5.03</td><td class="num">17.15</td></tr>
-            <tr class="floor"><td>Autoencoder reconstructions</td><td class="num">4.24</td><td class="num">14.35</td></tr>
+            <tr><td>Two-stage, denoising target</td><td class="num">6.84</td></tr>
+            <tr><td>Two-stage, CSEM target</td><td class="num">6.69</td></tr>
+            <tr class="best"><td>Co-trained, CSEM</td><td class="num">5.03</td></tr>
+            <tr class="floor"><td>Autoencoder reconstructions</td><td class="num">4.24</td></tr>
           </tbody>
-          <caption>FID (lower is better) at the final checkpoint: Fashion-MNIST epoch 320, CIFAR-10
-            epoch 800; RK4 probability-flow ODE, 20 steps. The last row decodes encoder posterior
-            samples and is shown as a reference floor.</caption>
+          <caption>FID (lower is better) at epoch 320; RK4 probability-flow ODE, 20 steps, CFG 1.5.
+            The last row decodes encoder posterior samples and is shown as a reference floor.</caption>
         </table>
       </div>
     </div>
     <p>
       Swapping the target while keeping the autoencoder frozen moves FID only slightly, from 6.84 to
-      6.69 on Fashion-MNIST and from 22.78 to 21.55 on CIFAR-10. Most of the improvement appears once
-      the CSEM objective is allowed to shape the encoder (5.03 and 17.15). The gain comes from a latent
-      representation that is easier to model and to integrate in few steps, not from the estimator alone.
+      6.69. Most of the improvement appears once the CSEM objective is allowed to shape the encoder (5.03).
     </p>
     <p class="note neutral">
-      <b>Protocol.</b> All three regimes share the score backbone, the sampler, and fixed evaluation
-      noise banks; FID uses InceptionV3 features against real test images. The guidance scale was
-      chosen for the best co-trained FID (1.5 on Fashion-MNIST, 3.0 on CIFAR-10) and then applied to
-      every regime. These results come from an earlier training configuration. Updated runs with the
-      revised architecture, the terminal-KL scale anchor, and seed-level uncertainty are in progress.
+      <b>Protocol.</b> FID uses InceptionV3 features against real test images; all values are generation
+      FIDs except the Fashion-MNIST reconstruction floor. Within each campaign, the regimes share the
+      score backbone, the sampler, and the evaluation settings. The Fashion-MNIST results and the
+      CIFAR-10 denoising-target baseline come from an earlier training configuration; an
+      architecture-matched Fashion-MNIST comparison is in progress.
     </p>
 
     <h4>Implementation</h4>
