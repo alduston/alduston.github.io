@@ -322,18 +322,160 @@
       observed information. Because the Tweedie–TSI disagreement has conditional mean zero, the gate
       changes the estimator's variance without changing its expectation.
     </p>
+    <h4>What the paper establishes</h4>
     <ul>
-      <li>The Gaussian special case, and finite-reference consistency and stability bounds for estimating the gate from weighted reference samples.</li>
-      <li>An application to normalized posterior-density evaluation for Bayesian inverse problems, built from MCMC pilot samples and derivative information.</li>
+      <li><b>The optimal matrix gate.</b> Over all matrix gates, the LFGI resolvent minimizes conditional trace risk. The exact Gaussian calculation shows why a scalar gate cannot do this: it applies one weight to stiff and soft directions alike.</li>
+      <li><b>Two routes to the same gate.</b> Centered regression on the score disagreement (the Matrix Blend below) and LFGI estimate the same population gate, but with different finite-reference errors: regression estimates a covariance ratio, LFGI a conditional Hessian average before inversion. The paper gives consistency and stability bounds for finite-reference LFGI.</li>
+      <li><b>Normalized densities from MCMC byproducts.</b> A frozen finite-reference LFGI score has a closed-form divergence, so MCMC pilot samples and derivative information define a normalized probability-flow density for the posterior. This supports posterior-energy evaluation and model-evidence estimation that the samples alone do not provide.</li>
     </ul>
+
+    <h4>Sampling with matrix gates</h4>
+    <p>
+      Six score estimators drive the same reverse-SDE sampler: Tweedie, uniform and local scalar
+      blends, uniform and local matrix blends, and LFGI, each built from independent score and gate
+      banks of 250 reference samples, averaged over five runs. In the misaligned singular-subspace
+      mixtures, each of eight components is nearly singular (rank 3 in <i>d</i> = 8), and the stiff
+      subspace rotates from component to component, so the optimal gate changes across the space.
+    </p>
     <figure>
-      <img src="assets/img/lfgi_gate.png" alt="Conditional trace variance of scalar and matrix-gated score estimators">
-      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): on a
-        2-D mixture of two thin, rotated Gaussians, the best scalar blend applies one weight in
-        every direction, while the LFGI matrix gate weights each direction by the local curvature
-        and reduces the averaged conditional trace variance by more than an order of magnitude at
-        small diffusion times.</figcaption>
+      <img src="assets/img/lfgi_gmm8_samples.png" alt="Two-dimensional projections of samples from a misaligned eight-component mixture in eight dimensions: Tweedie and the blend estimators give fragmented, speckled clouds, while LFGI closely matches the ground-truth reference">
+      <figcaption>Misaligned singular-subspace mixture (<i>d</i> = 8, eight rank-3 components):
+        two-dimensional projection of samples from each score estimator, and an independent
+        ground-truth sample (GT floor) of the same size. One run; panels share axes.</figcaption>
     </figure>
+    <figure>
+      <img src="assets/img/lfgi_funnel_samples.png" alt="Neal funnel samples in funnel coordinates for each score estimator; LFGI reproduces both the narrow neck and the wide mouth of the ground-truth funnel">
+      <figcaption>Neal's funnel in <i>d</i> = 10, in funnel coordinates: the conditional scale of
+        <i>x</i><sub>2</sub> changes exponentially with <i>x</i><sub>1</sub>, from a stiff neck to a
+        diffuse mouth. Unlike the mixtures, its observed information is indefinite in places, and the
+        strict finite-reference certificate does not hold at every audited time. One run; panels share
+        axes.</figcaption>
+    </figure>
+    <div class="table-wrap" style="margin-bottom: 16px">
+      <table class="results">
+        <thead>
+          <tr><th>Score estimator</th><th class="num">Mixture, <i>d</i> = 8</th><th class="num">Mixture, <i>d</i> = 24</th><th class="num">Funnel, <i>d</i> = 10</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tweedie</td><td class="num">7.32 ± 0.95</td><td class="num">10.16 ± 1.23</td><td class="num">148.7 ± 72.3</td></tr>
+          <tr><td>Uniform scalar blend</td><td class="num">6.28 ± 0.68</td><td class="num">9.82 ± 0.96</td><td class="num">62.1 ± 45.8</td></tr>
+          <tr><td>Scalar blend</td><td class="num">6.78 ± 0.79</td><td class="num">11.58 ± 0.97</td><td class="num">9.31 ± 0.68</td></tr>
+          <tr><td>Uniform matrix blend</td><td class="num">6.47 ± 0.45</td><td class="num">9.65 ± 0.51</td><td class="num">54.1 ± 13.4</td></tr>
+          <tr><td>Matrix blend</td><td class="num">7.45 ± 0.43</td><td class="num">11.76 ± 0.57</td><td class="num">123.9 ± 20.7</td></tr>
+          <tr class="best"><td>LFGI</td><td class="num">2.85 ± 0.17</td><td class="num">4.47 ± 0.20</td><td class="num">9.28 ± 1.84</td></tr>
+        </tbody>
+        <caption>Noisy-score RMSE averaged over diffusion time (lower is better); mean ± SD over five
+          runs, 250 score and 250 gate references. The <i>d</i> = 24 mixture has rank-4 components. The
+          funnel's exact noisy score is unavailable, so its column uses a high-reference estimate as
+          the reference.</caption>
+      </table>
+    </div>
+    <p>
+      LFGI also has the best sliced Kolmogorov–Smirnov distance, MMD, and held-out KDE likelihood of
+      the six estimators on all three targets. On the funnel its sliced KS distance is 0.061 ± 0.005,
+      against 0.053 ± 0.008 for an independent ground-truth sample of the same size.
+    </p>
+    <div class="fig-row">
+      <figure>
+        <img src="assets/img/lfgi_score_rmse_sweep.png" alt="Score RMSE versus reference count for six estimators; LFGI is lowest at every count">
+        <figcaption>Score RMSE against reference count on the <i>d</i> = 8 mixture, from 64 to 2,048
+          references. LFGI stays below every other estimator; the regression-based Matrix Blend
+          closes part of the gap only with large banks.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/lfgi_gate_error_t08.png" alt="Risk-weighted gate error versus gate-bank size for Matrix Blend and LFGI at t = 0.08; LFGI is lower at every size">
+        <figcaption>Error in estimating the same optimal gate at diffusion time <i>t</i> = 0.08,
+          weighted by the excess score risk it causes. Estimating the Hessian average and inverting
+          (LFGI) gives an error about 20 to 300 times smaller than regression at the same bank
+          size.</figcaption>
+      </figure>
+    </div>
+
+    <h4>Normalized density evaluation for inverse problems</h4>
+    <p>
+      In a Darcy-flow inverse problem, the 32 leading prior-covariance modes of a log-permeability field
+      are inferred from pressure at 120 interior sensors with noise level 10<sup>−3</sup>. MALA pilot
+      samples supply 1,000 score and 1,000 gate references; LFGI–GN builds the gate from a
+      Gauss–Newton precision, and the frozen score defines a normalized probability-flow density. Each
+      density is checked against the true unnormalized posterior energy on 1,000 held-out MALA samples,
+      alongside the MAP–Laplace Gaussian.
+    </p>
+    <figure class="narrow">
+      <img src="assets/img/lfgi_darcy_density.png" alt="Darcy-flow density energy against true posterior energy for LFGI, Tweedie and MAP-Laplace, with residuals; LFGI points lie tightly along the diagonal">
+      <figcaption>Held-out density energy, after the best affine fit, against the true posterior energy
+        (left), with residuals (right), for LFGI–GN, Tweedie, and MAP–Laplace. One run, central
+        3–97% energy band; the panel annotations are that run's values, while the table averages five
+        runs.</figcaption>
+    </figure>
+    <div class="table-wrap" style="margin-bottom: 16px">
+      <table class="results">
+        <thead>
+          <tr><th>Density model</th><th class="num">Spearman ↑</th><th class="num">Central <i>R</i><sup>2</sup> ↑</th><th class="num">Central RMSE ↓</th><th class="num">NLL ↓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tweedie</td><td class="num">0.598 ± 0.016</td><td class="num">0.377 ± 0.027</td><td class="num">40.0 ± 0.9</td><td class="num">136.3 ± 3.4</td></tr>
+          <tr><td>Uniform scalar blend</td><td class="num">0.579 ± 0.024</td><td class="num">0.298 ± 0.148</td><td class="num">607 ± 1263</td><td class="num">873 ± 1650</td></tr>
+          <tr><td>Scalar blend</td><td class="num">0.19 ± 0.27</td><td class="num">0.004 ± 0.003</td><td class="num">(4.3 ± 4.6)×10<sup>12</sup></td><td class="num">(1.1 ± 1.2)×10<sup>13</sup></td></tr>
+          <tr><td>Uniform matrix blend</td><td class="num">0.48 ± 0.26</td><td class="num">0.294 ± 0.249</td><td class="num">1005 ± 2155</td><td class="num">431 ± 685</td></tr>
+          <tr><td>Matrix blend</td><td class="num">0.660 ± 0.023</td><td class="num">0.432 ± 0.038</td><td class="num">42.1 ± 2.0</td><td class="num">127.6 ± 2.1</td></tr>
+          <tr class="best"><td>LFGI–GN</td><td class="num">0.949 ± 0.015</td><td class="num">0.86 ± 0.06</td><td class="num">6.3 ± 1.6</td><td class="num">28.8 ± 1.2</td></tr>
+          <tr><td>MAP–Laplace</td><td class="num">0.862 ± 0.004</td><td class="num">0.626 ± 0.009</td><td class="num">34.3 ± 1.9</td><td class="num">198 ± 62</td></tr>
+        </tbody>
+        <caption>Darcy-flow density evaluation on held-out posterior samples; mean ± SD over five runs.
+          Spearman: rank correlation of density energy with true energy. Central <i>R</i><sup>2</sup>
+          and RMSE: affine fit on the central 3–97% energy band. NLL: pointwise negative log-likelihood
+          of the normalized density.</caption>
+      </table>
+    </div>
+    <p>
+      Because the Darcy posterior's normalizing constant is unknown, absolute evidence accuracy is
+      checked on analytic inverse problems with closed-form evidence: a linear-Gaussian control, a
+      four-mode mixture posterior with shared curvature, and a four-mode mixture whose stiff
+      directions differ between modes.
+    </p>
+    <div class="table-wrap" style="margin-bottom: 16px">
+      <table class="results">
+        <thead>
+          <tr><th>Density model</th><th class="num">Linear-Gaussian</th><th class="num">Shared-curvature mixture</th><th class="num">Misaligned-curvature mixture</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tweedie</td><td class="num">18.4 ± 0.10</td><td class="num">29.6 ± 0.41</td><td class="num">29.9 ± 0.62</td></tr>
+          <tr><td>Uniform scalar blend</td><td class="num">1.91 ± 0.04</td><td class="num">3.69 ± 0.13</td><td class="num">3.77 ± 0.15</td></tr>
+          <tr><td>Scalar blend</td><td class="num">5.01 ± 1.4</td><td class="num">5.92 ± 2.8</td><td class="num">5.87 ± 2.7</td></tr>
+          <tr><td>Uniform matrix blend</td><td class="num">0.084 ± 0.009</td><td class="num">0.095 ± 0.005</td><td class="num">2.37 ± 0.06</td></tr>
+          <tr><td>Matrix blend</td><td class="num">1.77 ± 0.13</td><td class="num">5.27 ± 0.28</td><td class="num">5.66 ± 0.42</td></tr>
+          <tr><td>LFGI–GN</td><td class="num">0.080 ± 0.009</td><td class="num"><b>0.092 ± 0.007</b></td><td class="num"><b>0.102 ± 0.007</b></td></tr>
+          <tr><td>MAP–Laplace</td><td class="num"><b>0 (exact)</b></td><td class="num">672 ± 14</td><td class="num">415 ± 110</td></tr>
+        </tbody>
+        <caption>Absolute log-evidence error |log <i>Ẑ</i> − log <i>Z</i>| (lower is better) for analytic
+          inverse problems in <i>d</i> = 8; mean ± SD over five runs. Bold marks the best entry in each
+          column; MAP–Laplace is exact only for the Gaussian posterior.</caption>
+      </table>
+    </div>
+    <p>
+      A spatially uniform matrix gate is enough while curvature is shared across the posterior; once the
+      stiff directions differ between modes its evidence error rises to 2.37, while LFGI–GN stays at
+      0.10.
+    </p>
+
+    <details>
+      <summary>Scaling check and gate estimation at other diffusion times</summary>
+      <figure>
+        <img src="assets/img/lfgi_gmm24_samples.png" alt="Two-dimensional projections of samples from a misaligned mixture in 24 dimensions for each score estimator; LFGI matches the ground truth">
+        <figcaption>Misaligned singular-subspace mixture in <i>d</i> = 24 with rank-4 components, same
+          estimators and projection as above. One run; panels share axes.</figcaption>
+      </figure>
+      <div class="fig-row">
+        <figure>
+          <img src="assets/img/lfgi_gate_error_t04.png" alt="Risk-weighted gate error versus gate-bank size at t = 0.04">
+          <figcaption>Risk-weighted gate error at <i>t</i> = 0.04.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/img/lfgi_gate_error_t16.png" alt="Risk-weighted gate error versus gate-bank size at t = 0.16">
+          <figcaption>Risk-weighted gate error at <i>t</i> = 0.16.</figcaption>
+        </figure>
+      </div>
+    </details>
   </section>
 
   <section class="project" id="tsi">

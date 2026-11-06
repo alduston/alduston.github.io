@@ -118,6 +118,7 @@ figure { margin: 18px 0 22px; }
 figure img { width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 4px; }
 figure.diagram img { border: none; }
 figcaption { font-size: 14.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+figure.narrow { max-width: 640px; margin-left: auto; margin-right: auto; }
 .fig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .results-row { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; margin: 12px 0 8px; }
 .results-row figure { margin: 0; }

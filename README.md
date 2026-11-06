@@ -13,8 +13,8 @@ these from the repository explicitly (`git rm`):
 
 - the stale nested copy of the site in `alduston.github.io/` and the root-level `style.css`
   (every page loads `assets/style.css`);
-- the retired GAD figures `assets/img/gad_darcy.png`, `gad_ess.png`, `gad_navier_stokes.png`,
-  and `gad_ns_pca.png`.
+- the retired figures `assets/img/gad_darcy.png`, `gad_ess.png`, `gad_navier_stokes.png`,
+  `gad_ns_pca.png`, and `lfgi_gate.png`.
 
 ## Structure
 
@@ -74,8 +74,23 @@ The results figure and numbers are placeholders from the earlier training config
   annealed GN-GAD, from `Figures/InverseRefactor/plot_data/quake_geometry.npz` with the manuscript's
   bins, colormap, and color scale, without axis text so it reads at card size. The GAD results table
   in `research.html` copies the primary-metric columns of manuscript Tables 6 and 7.
-- `tsi_blend.png` and `lfgi_gate.png` are toy illustrations generated for the site, and their
-  captions say so.
+- `tsi_blend.png` is a toy illustration generated for the site, and its caption says so.
+- `lfgi_*.png` come from the LFGI manuscript (draft of 6 Nov 2026), `Figs/` in the Overleaf project.
+  The sample-histogram figures re-tile the manuscript's single row of seven panels into rows of
+  four and three (same panels, order, and axes; the figure-wide title is dropped):
+
+  | Site file | Manuscript source |
+  |---|---|
+  | `lfgi_gmm8_samples.png` | Fig. 2, `gmm8_heatmap.png` (re-tiled) |
+  | `lfgi_funnel_samples.png` | Fig. 3, `funnel_heatmaps.png` (re-tiled) |
+  | `lfgi_gmm24_samples.png` | Fig. 4, `gmm24_heatmap.png` (re-tiled) |
+  | `lfgi_score_rmse_sweep.png` | Fig. 1, `score_rmse_by_t.png` |
+  | `lfgi_gate_error_t04/t08/t16.png` | Fig. 6, `gate_figs/risk_capture_04/08/16.png` |
+  | `lfgi_darcy_density.png` | Fig. 5, `darcy_density_array.png`: header plus the LFGI, Tweedie, and MAP–Laplace rows |
+  | `lfgi_thumb.png` | Fig. 2 plot areas, Tweedie beside LFGI, without axis text |
+
+  The LFGI tables in `research.html` copy manuscript Tables 2–8: the score-RMSE column of Tables
+  2–4, Table 5 without the central-slope column, and the evidence-error column of Tables 6–8.
 
 ## Common edits
 
@@ -90,4 +105,4 @@ The results figure and numbers are placeholders from the earlier training config
 
 - Author list for the CSEM technical report (`papers.html`).
 - `assets/Alois_Duston_CV.pdf` still has the old GAD bullet (Darcy and Navier–Stokes). Regenerate
-  it from the CV source with the bullet now on `cv.html`. 
+  it from the CV source with the bullet now on `cv.html`.
