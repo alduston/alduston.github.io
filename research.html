@@ -63,94 +63,62 @@
 
     <figure class="diagram">
       <a href="assets/img/csem_cotraining.svg"><img src="assets/img/csem_cotraining.svg" alt="CSEM co-training architecture. Top lane: image, encoder, Gaussian posterior with mean and covariance, sampled latent, decoder, reconstruction loss. Bottom lane: OU noising of the latent, a DiT score network with a factored precision and mean head, and the analytic CSEM target computed from the encoder's mean and covariance. The CSEM loss compares the prediction with the target; its gradient flows back into the encoder for diffusion times below T_K."></a>
-      <figcaption>Co-training architecture. The encoder outputs a diagonal Gaussian posterior and the
-        decoder reconstructs from a sample. A DiT score network with a factored precision/mean head
-        predicts the noise on the OU-noised latent. The CSEM target (orange) is computed in closed
-        form from (μ<sub>φ</sub>, Σ<sub>φ</sub>), which opens the gradient path into the encoder on
-        diffusion times t &lt; T<sub>K</sub>. On the rest of the horizon the encoder is detached and only
-        the score network trains. In a standard two-stage LDM the target is the sampled noise ε and no
-        gradient reaches the encoder.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
+      <figcaption>Co-training architecture. The CSEM target (orange) is computed in closed form from the
+        encoder's mean and covariance, which opens a gradient path from the score loss into the encoder.
+        In a standard two-stage latent diffusion model the target is the sampled noise, and no gradient
+        reaches the encoder.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
     </figure>
 
     <h4>What the analytic target changes</h4>
     <ul>
-      <li><b>Same optimum, less target noise.</b> The aggregate latent score is the conditional expectation of the component scores (the CSEM identity), so regressing onto them is a Rao–Blackwellized form of denoising score matching.</li>
-      <li><b>An encoder signal that does not reward collapse.</b> Joint training with the standard denoising loss lets the encoder shrink its posterior variance to drive that loss toward zero. In our runs the latent collapses within a few epochs and the learned prior becomes degenerate even though reconstructions stay sharp. CSEM removes exactly this incentive.</li>
-      <li><b>An exact training objective.</b> With physical-time weighting, the CSEM loss up to a representation horizon T<sub>K</sub>, plus an analytic terminal KL, equals score-estimation error plus the rate I(X; Z<sub>0</sub>) plus the aggregate mismatch to N(0, I) at T<sub>K</sub>. Moving T<sub>K</sub> interpolates between a β-VAE, a standard two-stage LDM, and fully joint training.</li>
+      <li><b>Same optimum, less noise.</b> The aggregate latent score is the average of the component scores, so regressing onto them is a lower-variance (Rao–Blackwellized) form of denoising score matching.</li>
+      <li><b>No reward for collapse.</b> Joint training with the standard denoising loss lets the encoder shrink its posterior variance until the learned prior degenerates. CSEM removes that incentive.</li>
+      <li><b>One objective for the whole pipeline.</b> A single horizon parameter moves the objective between a β-VAE, a standard two-stage latent diffusion model, and fully joint training.</li>
     </ul>
 
-    <h4>Results on CIFAR-10</h4>
-    <div class="table-wrap" style="margin-bottom: 16px">
-      <table class="results">
-        <thead>
-          <tr><th>Training regime</th><th>Campaign and settings</th><th class="num">FID</th></tr>
-        </thead>
-        <tbody>
-          <tr class="best"><td>Co-trained CSEM (flat), best seed</td><td>Current runs: epoch 800, CFG 2.5</td><td class="num">8.48</td></tr>
-          <tr><td>Co-trained CSEM (flat), two-seed mean</td><td>Current runs: epoch 800, CFG 2.5</td><td class="num">8.72&nbsp;±&nbsp;0.34</td></tr>
-          <tr><td>Co-trained CSEM</td><td>Matched sweep: epoch 500, CFG 3, two-seed mean</td><td class="num">9.82</td></tr>
-          <tr><td>Independent representation, CSEM score head</td><td>Matched sweep: epoch 500, CFG 3, two-seed mean</td><td class="num">12.40</td></tr>
-          <tr><td>Independent VAE, denoising (Tweedie) target</td><td>Historical report: epoch 800, CFG 3</td><td class="num">22.78</td></tr>
-        </tbody>
-        <caption>Generation FID, lower is better. Rows come from three campaigns with different
-          settings; only rows within the same campaign form a matched comparison. Current runs:
-          full-horizon Gaussian start, temperature 1, 20-step RK4; mean ± sample SD over seeds 42 and
-          43. Matched sweep: Gaussian start, diffusion horizon T = 1.6, 10,000 samples, seeds 42 and 43.
-          Historical report: 20-step RK4.</caption>
-      </table>
+    <h4>Results</h4>
+    <div class="stats">
+      <div class="stat">
+        <div class="label">CIFAR-10 FID (lower is better)</div>
+        <div class="value">8.48</div>
+        <div class="ctx">co-trained CSEM, best of two seeds (mean 8.72&nbsp;±&nbsp;0.34)</div>
+      </div>
+      <div class="stat">
+        <div class="label">CIFAR-10, matched comparison</div>
+        <div class="value"><span class="from">12.40 →</span> 9.82</div>
+        <div class="ctx">VAE trained without diffusion feedback vs. co-trained, same score head</div>
+      </div>
+      <div class="stat">
+        <div class="label">Fashion-MNIST FID</div>
+        <div class="value"><span class="from">6.84 →</span> 5.03</div>
+        <div class="ctx">two-stage baseline vs. co-trained</div>
+      </div>
     </div>
-    <p>
-      Flat CSEM co-training reaches 8.48 FID on CIFAR-10 in the current runs, with a two-seed mean of
-      8.72 ± 0.34 (epoch 800, temperature 1, CFG 2.5). In an earlier sweep with matched settings,
-      co-training lowered FID by about 21%, from 12.40 to 9.82, against the strongest
-      independent-representation baseline: a VAE trained with no gradient from the diffusion loss,
-      sampled with the same CSEM-trained score head and taken at the best of its reported KL-weight
-      settings. The gain comes from a latent representation that is easier to model and to integrate in
-      few steps, not from the score target alone.
-    </p>
-
-    <h4>Results on Fashion-MNIST</h4>
     <div class="results-row">
       <figure>
         <img src="assets/img/csem_fid_fmnist.png" alt="Fashion-MNIST FID versus prior-training epoch for co-trained CSEM, independent CSEM, and independent Tweedie; co-trained CSEM is lowest at every checkpoint">
-        <figcaption>Fashion-MNIST FID over prior-training epochs (RK4, 20 steps, guidance 1.5).
-          Solid: co-trained CSEM. Dashed: priors trained on an independently trained VAE, with the
-          CSEM target (blue) or the standard denoising target (red).</figcaption>
+        <figcaption>Fashion-MNIST FID during prior training. Solid: co-trained CSEM. Dashed: priors
+          trained on a separately trained VAE, with the CSEM target (blue) or the standard denoising
+          target (red).</figcaption>
       </figure>
-      <div class="table-wrap">
-        <table class="results">
-          <thead>
-            <tr><th>Training regime</th><th class="num">FID</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Two-stage, denoising target</td><td class="num">6.84</td></tr>
-            <tr><td>Two-stage, CSEM target</td><td class="num">6.69</td></tr>
-            <tr class="best"><td>Co-trained, CSEM</td><td class="num">5.03</td></tr>
-            <tr class="floor"><td>Autoencoder reconstructions</td><td class="num">4.24</td></tr>
-          </tbody>
-          <caption>FID (lower is better) at epoch 320; RK4 probability-flow ODE, 20 steps, CFG 1.5.
-            The last row decodes encoder posterior samples and is shown as a reference floor.</caption>
-        </table>
+      <div>
+        <p>
+          Most of the gain comes from letting the score loss shape the latent space. With the
+          autoencoder frozen, swapping in the CSEM target moves Fashion-MNIST FID only from 6.84 to
+          6.69; training both together brings it to 5.03.
+        </p>
+        <p>
+          The CIFAR-10 headline comes from the current, longer runs and the matched comparison from an
+          earlier sweep; each comparison holds the backbone, sampler, and evaluation settings fixed.
+          The technical report has the full protocol.
+        </p>
       </div>
     </div>
-    <p>
-      Swapping the target while keeping the autoencoder frozen moves FID only slightly, from 6.84 to
-      6.69. Most of the improvement appears once the CSEM objective is allowed to shape the encoder (5.03).
-    </p>
-    <p class="note neutral">
-      <b>Protocol.</b> FID uses InceptionV3 features against real test images; all values are generation
-      FIDs except the Fashion-MNIST reconstruction floor. Within each campaign, the regimes share the
-      score backbone, the sampler, and the evaluation settings. The Fashion-MNIST results and the
-      CIFAR-10 denoising-target baseline come from an earlier training configuration; an
-      architecture-matched Fashion-MNIST comparison is in progress.
-    </p>
 
     <h4>Implementation</h4>
     <ul class="compact">
-      <li>PyTorch; LightningDiT score backbone with adaLN-zero conditioning on diffusion time and class label.</li>
-      <li>Factored natural-parameter output head (precision ⊙ latent − mean), read off the CSEM identity, with a gauge-fixing auxiliary regression that touches only the head.</li>
-      <li>VAE trained with reconstruction, perceptual, and PatchGAN adversarial losses; class-conditional encoder and classifier-free guidance.</li>
-      <li>Routed two-horizon gradients: the representation loss acts on [t<sub>min</sub>, T<sub>K</sub>], and the score network trains on [t<sub>min</sub>, T] with the encoder detached.</li>
+      <li>PyTorch; LightningDiT score backbone with adaLN-zero conditioning; class-conditional VAE with perceptual and PatchGAN losses; classifier-free guidance.</li>
+      <li>Routed gradients: the representation loss reaches the encoder only at small diffusion times, while the score network trains on the full horizon with the encoder detached.</li>
     </ul>
   </section>
 
@@ -167,141 +135,43 @@
     <div class="meta">with Tan Bui-Thanh · manuscript in final preparation · draft available on request</div>
     <p>
       Gated Action Dissipation (GAD) samples a posterior by repeated diffusion transport of an
-      unweighted sample bank. Each round rebuilds the reverse-diffusion score from the current bank,
-      the target score, and its observed information, then transports fresh Gaussian draws with that
-      frozen score to form the next bank. The rebuilt score uses q-LFGI: the LFGI matrix gate (below)
-      evaluated under the current law rather than the target. No importance weights, resampling,
-      inner Markov chain, or density fit of the transported law are used.
+      unweighted sample bank. Each round rebuilds the reverse-diffusion score from the current samples,
+      the target's score, and its curvature, using the LFGI matrix gate (below) evaluated under the
+      current samples, then transports fresh Gaussian draws to form the next bank. It needs no
+      importance weights, resampling, or inner Markov chain.
     </p>
     <figure>
       <img src="assets/img/gad_1d_progression.png" alt="One-dimensional three-mode target and the current law initially and after GAD rounds 1, 2, 3 and 5, converging onto the target">
-      <figcaption>Rebuilding on a one-dimensional three-component mixture (dark), starting from a
-        near-Gaussian law (teal). Each round transports 5,000 endpoints with the rebuilt score; for
-        this illustration only, the next law is a three-component fit to those endpoints, a
-        projection the production algorithm does not use. Forward KL falls from 0.572 to 0.076 after
-        one round and to 0.0035 after five. The separated left mode places this target outside the
-        class covered by the convergence theorem.</figcaption>
+      <figcaption>Rebuilding on a one-dimensional three-mode target (dark). Starting from a
+        near-Gaussian law, the current samples (teal) settle onto the target within a few
+        rounds.</figcaption>
     </figure>
-
-    <h4>What the analysis shows</h4>
     <ul>
-      <li><b>Which part of the score correction is observable.</b> A conditional Stein–Poisson representation writes the inaccessible target/current relative score and the computable Tweedie/target-score disagreement as two moments of one conditional flux: the first unweighted, the second weighted by observed information. Inverting the mean information channel gives exactly the q-LFGI correction, so its error is exactly the transverse remainder rather than an unspecified gate defect. At the target, q-LFGI reduces to the variance-optimal LFGI gate.</li>
-      <li><b>Convergence from any finite-KL start.</b> For strongly log-concave perturbations of a Gaussian (bounded perturbation Hessian and gradient variation), an exact residual identity gives a certificate θ computed from the target alone. When θ &lt; 1, the population GAD map contracts forward KL by θ<sup>2</sup> per round from every initial density with finite KL, with no smoothness, moment, or proximity assumption on the start. A finite diffusion horizon adds an error that decays exponentially in the horizon.</li>
-      <li><b>Where the theorem stops.</b> The class excludes separated multimodal targets and has not been verified for the inverse posteriors below. In a mode-separation study, first-round KL progress tracks clean-score sensitivity as two modes separate; both fall by orders of magnitude, and mass imbalance persists at large separation.</li>
+      <li><b>What the rebuilt score can see.</b> The part of the score correction that is recoverable from the current samples and curvature is exactly what the gate reconstructs; the rest is an explicit error term.</li>
+      <li><b>Convergence.</b> For strongly log-concave perturbations of a Gaussian, every round contracts the KL divergence to the target by a factor computed from the target alone, from any starting distribution with finite KL.</li>
+      <li><b>Scope.</b> Well-separated multimodal targets lie outside the theorem, and the manuscript measures how mode separation slows progress.</li>
     </ul>
 
     <h4>Nonlinear inverse problems</h4>
     <p>
-      Two posteriors with curved physical uncertainty test finite-bank GN-GAD, which uses
-      Gauss–Newton curvature and an annealed likelihood path whose final rounds target the full
-      posterior. In <b>acoustic trajectory inversion</b> (16 dimensions), eight
-      time-difference-of-arrival measurements at two receivers constrain the path of a moving source.
-      In <b>joint earthquake location</b> (23 dimensions), five events and three shared velocity
-      parameters are inferred from 24 arrival-time picks at six stations; four of the events are
-      seen by only three picks each. The comparisons are MAP-preconditioned MALA started from
-      MAP–Laplace (MAP-pMALA), annealed MALA and HMC, and local Gauss–Newton MALA (GN-smMALA, with and
-      without annealing), all at a common request allowance.
+      GAD is tested on a 16-dimensional acoustic source-tracking problem and a 23-dimensional joint
+      earthquake-location and velocity problem, where sparse data leave curved, non-Gaussian
+      posteriors. With the same budget of target, gradient, and curvature evaluations as the MCMC
+      baselines, annealed GAD recovers the curved posterior and reaches the lowest error of the tested
+      samplers in both problems.
     </p>
     <figure>
       <img src="assets/img/gad_quake_geometry.png" alt="Earthquake depth versus horizontal offset for events E2 and E4: NUTS reference, annealed GN-GAD, direct GN-GAD and GN-smMALA; both GAD variants recover the curved U-shaped support">
-      <figcaption>Joint earthquake location with uncertain velocities. Rows show events E2 and E4:
-        depth against horizontal offset along the reference's principal direction. Columns show the
-        NUTS reference, annealed and direct GN-GAD after six rounds, and GN-smMALA at the same request
-        allowance. One sampler seed; colors give log probability per bin.</figcaption>
+      <figcaption>Joint earthquake location: depth against horizontal offset for two of the five
+        events. GAD (middle columns) recovers the curved, U-shaped posterior of the NUTS reference; a
+        Gauss–Newton MALA chain given the same budget covers it only sparsely.</figcaption>
     </figure>
     <figure>
-      <img src="assets/img/gad_acoustic_geometry.png" alt="Acoustic source position at 5 seconds: NUTS reference, annealed GN-GAD, direct GN-GAD and annealed HMC; the GAD variants cover the full curved band">
-      <figcaption>Acoustic trajectory inversion: source position at the 5 s midpoint for the NUTS
-        reference, annealed and direct GN-GAD, and annealed HMC at the final request allowance. One
-        sampler seed, 10,000 draws per panel; colors give log probability per bin.</figcaption>
+      <img src="assets/img/gad_accuracy_vs_requests.png" alt="Distributional error versus evaluation budget for the acoustic and earthquake problems; annealed GN-GAD ends lowest in both">
+      <figcaption>Distance to the reference posterior as the evaluation budget grows (lower is
+        better; mean and spread over five runs). Budgets count target, gradient, and curvature
+        evaluations, not wall time.</figcaption>
     </figure>
-    <p>
-      Annealing lowers GAD's distributional error in every paired seed of both problems: by 13% for
-      the acoustic trajectory and by half for earthquake location (0.311 → 0.154), where annealed
-      GN-GAD is 42.5% below the best MCMC control, GN-smMALA. MAP-pMALA fits the data well but misses
-      much of the curved support.
-    </p>
-    <figure>
-      <img src="assets/img/gad_accuracy_vs_requests.png" alt="Distributional error versus request allowance for the acoustic and earthquake problems; annealed GN-GAD ends lowest in both">
-      <figcaption>Distributional error against the common request allowance at every recorded round
-        (four acoustic, six earthquake). Markers are five-seed means and shading one sample SD; lower
-        is better. Hollow markers and dashed segments mark rounds at an intermediate likelihood
-        power, measured against the final posterior. Dotted lines are the split-reference discrepancy
-        of the finite NUTS reference.</figcaption>
-    </figure>
-    <div class="table-wrap">
-      <table class="results">
-        <thead>
-          <tr><th>Method</th><th class="num">Acoustic (16-D)</th><th class="num">Earthquake (23-D)</th></tr>
-        </thead>
-        <tbody>
-          <tr class="best"><td>Annealed GN-GAD</td><td class="num">0.134 ± 0.012</td><td class="num">0.154 ± 0.019</td></tr>
-          <tr><td>Direct GN-GAD</td><td class="num">0.154 ± 0.009</td><td class="num">0.311 ± 0.104</td></tr>
-          <tr><td>MAP-pMALA</td><td class="num">0.630 ± 0.020</td><td class="num">0.491 ± 0.025</td></tr>
-          <tr><td>Annealed MALA</td><td class="num">0.218 ± 0.001</td><td class="num">0.653 ± 0.020</td></tr>
-          <tr><td>GN-smMALA</td><td class="num">0.312 ± 0.113</td><td class="num">0.267 ± 0.028</td></tr>
-          <tr><td>Annealed GN-smMALA</td><td class="num">0.239 ± 0.026</td><td class="num">0.374 ± 0.021</td></tr>
-          <tr><td>Annealed HMC</td><td class="num">0.213 ± 0.004</td><td class="num">0.359 ± 0.028</td></tr>
-        </tbody>
-        <caption>Distributional error at the final request allowance (27,517 and 27,000 energy,
-          gradient, and curvature requests); five-seed mean ± sample SD, lower is better. Acoustic:
-          joint sliced Wasserstein-2 distance in prior-whitened coefficients, normalized by the
-          reference spread. Earthquake: the same normalized distance averaged over the
-          location/origin-time blocks of events E2–E5.</caption>
-      </table>
-    </div>
-    <p class="note neutral">
-      <b>Protocol.</b> Each problem uses one fixed synthetic dataset; the spread is over five sampler
-      seeds, against NUTS-based references that never enter any sampler. Every method is charged the
-      same cumulative count of energy, gradient, and curvature requests, including MAP setup, warmup,
-      and rejected proposals; this matches requests, not FLOPs or wall time. Gauss–Newton curvature,
-      likelihood annealing, and probability-flow transport lie outside the convergence theorem. Other
-      diagnostics trade off differently: MAP-pMALA matches the data-fit statistic best in both
-      problems, annealed GN-GAD's acoustic data-fit ratio is about 2 (target 1), and in the acoustic
-      problem annealed GN-smMALA and annealed HMC have slightly lower maximum event-probability error.
-    </p>
-
-    <details>
-      <summary>Algorithmic checks and two-dimensional benchmarks</summary>
-      <p>
-        <b>Gate choice.</b> On an eight-dimensional ridge target with location-dependent anisotropy,
-        seven rebuilding rules run at equal reference counts (1,024) and rounds. After three rounds
-        q-LFGI has the lowest error, a normalized sliced Wasserstein-2 distance of 8.56 ± 0.40%
-        against a target-versus-target sampling scale of 7.87 ± 0.29%. The next best, a local scalar
-        gate, reaches 12.12 ± 0.75%, and the target-score (TSI) estimator fails in every run by round three.
-      </p>
-      <figure>
-        <img src="assets/img/gad_gate_ablation.png" alt="Gate ablation: exact target and GAD rounds 1 to 3 for q-LFGI, local scalar, local matrix blend and uniform matrix gates">
-        <figcaption>Rows: q-LFGI, local scalar, local matrix blend, and uniform matrix gates. Columns:
-          exact target and GAD rounds 1–3, in the first two of eight ridge coordinates, from one
-          seed. Contours enclose 50% and 90% of the exact target.</figcaption>
-      </figure>
-      <p>
-        <b>Mode separation.</b> For an equal-weight two-Gaussian target, started from the correct
-        components with 0.7/0.3 weights, exact population density calculations (no sampling) compare
-        measured KL progress with clean-score sensitivity as the components separate.
-      </p>
-      <figure>
-        <img src="assets/img/gad_mode_separation.png" alt="Left: first-round KL improvement and clean-score sensitivity versus mode separation. Right: forward KL over 30 rounds for separations 5, 7 and 9">
-        <figcaption>(a) First-round fractional KL improvement and dimensionless clean-score sensitivity
-          against separation in component standard deviations; neither curve is fitted to the other.
-          (b) Forward KL over 30 rebuilding rounds for separations 5, 7, and 9.</figcaption>
-      </figure>
-      <p>
-        <b>Connected two-dimensional targets.</b> Against isotropic MALA and unit-mass HMC, all
-        started from the same broad law and given 24,576 energy, gradient, and Hessian requests,
-        three-round GAD with 4,096 references has the lowest mean error on the Gaussian, unequal-lobe,
-        and S-chain targets, and HMC has the lowest on the ring. Seed-to-seed variation rules out a
-        uniform ranking.
-      </p>
-      <figure>
-        <img src="assets/img/gad_2d_benchmarks.png" alt="Two-dimensional Gaussian, unequal-lobe, ring and S-shaped targets with GAD, MALA and HMC samples">
-        <figcaption>Target, GAD, MALA, and HMC at the matched request allowance (one seed). GAD panels
-          are 60,000 fresh draws from its frozen third-round field; MCMC panels resample the
-          budgeted chain states, so the smoother GAD panels partly reflect the larger native
-          cloud.</figcaption>
-      </figure>
-    </details>
   </section>
 
   <section class="project" id="lfgi">
@@ -322,160 +192,31 @@
       observed information. Because the Tweedie–TSI disagreement has conditional mean zero, the gate
       changes the estimator's variance without changing its expectation.
     </p>
-    <h4>What the paper establishes</h4>
     <ul>
-      <li><b>The optimal matrix gate.</b> Over all matrix gates, the LFGI resolvent minimizes conditional trace risk. The exact Gaussian calculation shows why a scalar gate cannot do this: it applies one weight to stiff and soft directions alike.</li>
-      <li><b>Two routes to the same gate.</b> Centered regression on the score disagreement (the Matrix Blend below) and LFGI estimate the same population gate, but with different finite-reference errors: regression estimates a covariance ratio, LFGI a conditional Hessian average before inversion. The paper gives consistency and stability bounds for finite-reference LFGI.</li>
-      <li><b>Normalized densities from MCMC byproducts.</b> A frozen finite-reference LFGI score has a closed-form divergence, so MCMC pilot samples and derivative information define a normalized probability-flow density for the posterior. This supports posterior-energy evaluation and model-evidence estimation that the samples alone do not provide.</li>
+      <li><b>Optimal by construction.</b> Among all matrix gates, LFGI minimizes the conditional score error. A scalar blend cannot: it applies one weight to stiff and soft directions alike.</li>
+      <li><b>Easy to estimate.</b> Averaging the target's Hessian over reference samples and then inverting estimates the gate far more accurately than regressing it from score samples, with finite-sample consistency and stability bounds.</li>
+      <li><b>Normalized densities from MCMC byproducts.</b> A frozen LFGI score defines a normalized posterior density from MCMC pilot samples, supporting energy evaluation and model-evidence estimates that the samples alone cannot give.</li>
     </ul>
-
-    <h4>Sampling with matrix gates</h4>
+    <figure>
+      <img src="assets/img/lfgi_gmm8_samples.png" alt="Two-dimensional projections of samples from a misaligned eight-component mixture in eight dimensions: Tweedie and the blend estimators give fragmented clouds, while LFGI closely matches the ground-truth reference">
+      <figcaption>Samples from an eight-dimensional mixture whose nearly singular components point in
+        different directions, under six score estimators and an exact reference sample (GT floor).
+        Tweedie and the scalar and matrix blends give fragmented clouds; LFGI matches the
+        reference.</figcaption>
+    </figure>
     <p>
-      Six score estimators drive the same reverse-SDE sampler: Tweedie, uniform and local scalar
-      blends, uniform and local matrix blends, and LFGI, each built from independent score and gate
-      banks of 250 reference samples, averaged over five runs. In the misaligned singular-subspace
-      mixtures, each of eight components is nearly singular (rank 3 in <i>d</i> = 8), and the stiff
-      subspace rotates from component to component, so the optimal gate changes across the space.
+      Across mixture and funnel benchmarks, LFGI has the lowest score error of the six estimators, about
+      half that of the best alternative on the mixtures, and produces the samples closest to the
+      target. In a Darcy-flow inverse problem, the normalized density that LFGI builds from MCMC pilot
+      samples tracks the true posterior energy far more closely than the standard MAP–Laplace Gaussian
+      approximation.
     </p>
     <figure>
-      <img src="assets/img/lfgi_gmm8_samples.png" alt="Two-dimensional projections of samples from a misaligned eight-component mixture in eight dimensions: Tweedie and the blend estimators give fragmented, speckled clouds, while LFGI closely matches the ground-truth reference">
-      <figcaption>Misaligned singular-subspace mixture (<i>d</i> = 8, eight rank-3 components):
-        two-dimensional projection of samples from each score estimator, and an independent
-        ground-truth sample (GT floor) of the same size. One run; panels share axes.</figcaption>
+      <img src="assets/img/lfgi_darcy_density.png" alt="Darcy-flow density energy against true posterior energy for LFGI, Tweedie and MAP-Laplace; LFGI points lie tightly along the diagonal">
+      <figcaption>Darcy-flow posterior: density energy from each model, after an affine fit, against
+        the true posterior energy on held-out samples. LFGI's points lie along the diagonal; Tweedie
+        scatters widely and MAP–Laplace captures only part of the trend.</figcaption>
     </figure>
-    <figure>
-      <img src="assets/img/lfgi_funnel_samples.png" alt="Neal funnel samples in funnel coordinates for each score estimator; LFGI reproduces both the narrow neck and the wide mouth of the ground-truth funnel">
-      <figcaption>Neal's funnel in <i>d</i> = 10, in funnel coordinates: the conditional scale of
-        <i>x</i><sub>2</sub> changes exponentially with <i>x</i><sub>1</sub>, from a stiff neck to a
-        diffuse mouth. Unlike the mixtures, its observed information is indefinite in places, and the
-        strict finite-reference certificate does not hold at every audited time. One run; panels share
-        axes.</figcaption>
-    </figure>
-    <div class="table-wrap" style="margin-bottom: 16px">
-      <table class="results">
-        <thead>
-          <tr><th>Score estimator</th><th class="num">Mixture, <i>d</i> = 8</th><th class="num">Mixture, <i>d</i> = 24</th><th class="num">Funnel, <i>d</i> = 10</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Tweedie</td><td class="num">7.32 ± 0.95</td><td class="num">10.16 ± 1.23</td><td class="num">148.7 ± 72.3</td></tr>
-          <tr><td>Uniform scalar blend</td><td class="num">6.28 ± 0.68</td><td class="num">9.82 ± 0.96</td><td class="num">62.1 ± 45.8</td></tr>
-          <tr><td>Scalar blend</td><td class="num">6.78 ± 0.79</td><td class="num">11.58 ± 0.97</td><td class="num">9.31 ± 0.68</td></tr>
-          <tr><td>Uniform matrix blend</td><td class="num">6.47 ± 0.45</td><td class="num">9.65 ± 0.51</td><td class="num">54.1 ± 13.4</td></tr>
-          <tr><td>Matrix blend</td><td class="num">7.45 ± 0.43</td><td class="num">11.76 ± 0.57</td><td class="num">123.9 ± 20.7</td></tr>
-          <tr class="best"><td>LFGI</td><td class="num">2.85 ± 0.17</td><td class="num">4.47 ± 0.20</td><td class="num">9.28 ± 1.84</td></tr>
-        </tbody>
-        <caption>Noisy-score RMSE averaged over diffusion time (lower is better); mean ± SD over five
-          runs, 250 score and 250 gate references. The <i>d</i> = 24 mixture has rank-4 components. The
-          funnel's exact noisy score is unavailable, so its column uses a high-reference estimate as
-          the reference.</caption>
-      </table>
-    </div>
-    <p>
-      LFGI also has the best sliced Kolmogorov–Smirnov distance, MMD, and held-out KDE likelihood of
-      the six estimators on all three targets. On the funnel its sliced KS distance is 0.061 ± 0.005,
-      against 0.053 ± 0.008 for an independent ground-truth sample of the same size.
-    </p>
-    <div class="fig-row">
-      <figure>
-        <img src="assets/img/lfgi_score_rmse_sweep.png" alt="Score RMSE versus reference count for six estimators; LFGI is lowest at every count">
-        <figcaption>Score RMSE against reference count on the <i>d</i> = 8 mixture, from 64 to 2,048
-          references. LFGI stays below every other estimator; the regression-based Matrix Blend
-          closes part of the gap only with large banks.</figcaption>
-      </figure>
-      <figure>
-        <img src="assets/img/lfgi_gate_error_t08.png" alt="Risk-weighted gate error versus gate-bank size for Matrix Blend and LFGI at t = 0.08; LFGI is lower at every size">
-        <figcaption>Error in estimating the same optimal gate at diffusion time <i>t</i> = 0.08,
-          weighted by the excess score risk it causes. Estimating the Hessian average and inverting
-          (LFGI) gives an error about 20 to 300 times smaller than regression at the same bank
-          size.</figcaption>
-      </figure>
-    </div>
-
-    <h4>Normalized density evaluation for inverse problems</h4>
-    <p>
-      In a Darcy-flow inverse problem, the 32 leading prior-covariance modes of a log-permeability field
-      are inferred from pressure at 120 interior sensors with noise level 10<sup>−3</sup>. MALA pilot
-      samples supply 1,000 score and 1,000 gate references; LFGI–GN builds the gate from a
-      Gauss–Newton precision, and the frozen score defines a normalized probability-flow density. Each
-      density is checked against the true unnormalized posterior energy on 1,000 held-out MALA samples,
-      alongside the MAP–Laplace Gaussian.
-    </p>
-    <figure class="narrow">
-      <img src="assets/img/lfgi_darcy_density.png" alt="Darcy-flow density energy against true posterior energy for LFGI, Tweedie and MAP-Laplace, with residuals; LFGI points lie tightly along the diagonal">
-      <figcaption>Held-out density energy, after the best affine fit, against the true posterior energy
-        (left), with residuals (right), for LFGI–GN, Tweedie, and MAP–Laplace. One run, central
-        3–97% energy band; the panel annotations are that run's values, while the table averages five
-        runs.</figcaption>
-    </figure>
-    <div class="table-wrap" style="margin-bottom: 16px">
-      <table class="results">
-        <thead>
-          <tr><th>Density model</th><th class="num">Spearman ↑</th><th class="num">Central <i>R</i><sup>2</sup> ↑</th><th class="num">Central RMSE ↓</th><th class="num">NLL ↓</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Tweedie</td><td class="num">0.598 ± 0.016</td><td class="num">0.377 ± 0.027</td><td class="num">40.0 ± 0.9</td><td class="num">136.3 ± 3.4</td></tr>
-          <tr><td>Uniform scalar blend</td><td class="num">0.579 ± 0.024</td><td class="num">0.298 ± 0.148</td><td class="num">607 ± 1263</td><td class="num">873 ± 1650</td></tr>
-          <tr><td>Scalar blend</td><td class="num">0.19 ± 0.27</td><td class="num">0.004 ± 0.003</td><td class="num">(4.3 ± 4.6)×10<sup>12</sup></td><td class="num">(1.1 ± 1.2)×10<sup>13</sup></td></tr>
-          <tr><td>Uniform matrix blend</td><td class="num">0.48 ± 0.26</td><td class="num">0.294 ± 0.249</td><td class="num">1005 ± 2155</td><td class="num">431 ± 685</td></tr>
-          <tr><td>Matrix blend</td><td class="num">0.660 ± 0.023</td><td class="num">0.432 ± 0.038</td><td class="num">42.1 ± 2.0</td><td class="num">127.6 ± 2.1</td></tr>
-          <tr class="best"><td>LFGI–GN</td><td class="num">0.949 ± 0.015</td><td class="num">0.86 ± 0.06</td><td class="num">6.3 ± 1.6</td><td class="num">28.8 ± 1.2</td></tr>
-          <tr><td>MAP–Laplace</td><td class="num">0.862 ± 0.004</td><td class="num">0.626 ± 0.009</td><td class="num">34.3 ± 1.9</td><td class="num">198 ± 62</td></tr>
-        </tbody>
-        <caption>Darcy-flow density evaluation on held-out posterior samples; mean ± SD over five runs.
-          Spearman: rank correlation of density energy with true energy. Central <i>R</i><sup>2</sup>
-          and RMSE: affine fit on the central 3–97% energy band. NLL: pointwise negative log-likelihood
-          of the normalized density.</caption>
-      </table>
-    </div>
-    <p>
-      Because the Darcy posterior's normalizing constant is unknown, absolute evidence accuracy is
-      checked on analytic inverse problems with closed-form evidence: a linear-Gaussian control, a
-      four-mode mixture posterior with shared curvature, and a four-mode mixture whose stiff
-      directions differ between modes.
-    </p>
-    <div class="table-wrap" style="margin-bottom: 16px">
-      <table class="results">
-        <thead>
-          <tr><th>Density model</th><th class="num">Linear-Gaussian</th><th class="num">Shared-curvature mixture</th><th class="num">Misaligned-curvature mixture</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Tweedie</td><td class="num">18.4 ± 0.10</td><td class="num">29.6 ± 0.41</td><td class="num">29.9 ± 0.62</td></tr>
-          <tr><td>Uniform scalar blend</td><td class="num">1.91 ± 0.04</td><td class="num">3.69 ± 0.13</td><td class="num">3.77 ± 0.15</td></tr>
-          <tr><td>Scalar blend</td><td class="num">5.01 ± 1.4</td><td class="num">5.92 ± 2.8</td><td class="num">5.87 ± 2.7</td></tr>
-          <tr><td>Uniform matrix blend</td><td class="num">0.084 ± 0.009</td><td class="num">0.095 ± 0.005</td><td class="num">2.37 ± 0.06</td></tr>
-          <tr><td>Matrix blend</td><td class="num">1.77 ± 0.13</td><td class="num">5.27 ± 0.28</td><td class="num">5.66 ± 0.42</td></tr>
-          <tr><td>LFGI–GN</td><td class="num">0.080 ± 0.009</td><td class="num"><b>0.092 ± 0.007</b></td><td class="num"><b>0.102 ± 0.007</b></td></tr>
-          <tr><td>MAP–Laplace</td><td class="num"><b>0 (exact)</b></td><td class="num">672 ± 14</td><td class="num">415 ± 110</td></tr>
-        </tbody>
-        <caption>Absolute log-evidence error |log <i>Ẑ</i> − log <i>Z</i>| (lower is better) for analytic
-          inverse problems in <i>d</i> = 8; mean ± SD over five runs. Bold marks the best entry in each
-          column; MAP–Laplace is exact only for the Gaussian posterior.</caption>
-      </table>
-    </div>
-    <p>
-      A spatially uniform matrix gate is enough while curvature is shared across the posterior; once the
-      stiff directions differ between modes its evidence error rises to 2.37, while LFGI–GN stays at
-      0.10.
-    </p>
-
-    <details>
-      <summary>Scaling check and gate estimation at other diffusion times</summary>
-      <figure>
-        <img src="assets/img/lfgi_gmm24_samples.png" alt="Two-dimensional projections of samples from a misaligned mixture in 24 dimensions for each score estimator; LFGI matches the ground truth">
-        <figcaption>Misaligned singular-subspace mixture in <i>d</i> = 24 with rank-4 components, same
-          estimators and projection as above. One run; panels share axes.</figcaption>
-      </figure>
-      <div class="fig-row">
-        <figure>
-          <img src="assets/img/lfgi_gate_error_t04.png" alt="Risk-weighted gate error versus gate-bank size at t = 0.04">
-          <figcaption>Risk-weighted gate error at <i>t</i> = 0.04.</figcaption>
-        </figure>
-        <figure>
-          <img src="assets/img/lfgi_gate_error_t16.png" alt="Risk-weighted gate error versus gate-bank size at t = 0.16">
-          <figcaption>Risk-weighted gate error at <i>t</i> = 0.16.</figcaption>
-        </figure>
-      </div>
-    </details>
   </section>
 
   <section class="project" id="tsi">
@@ -488,18 +229,27 @@
       under the forward diffusion. The two particle-wise estimators have complementary variance:
       Tweedie's is large at small diffusion times, TSI's at large times.
     </p>
-    <ul>
-      <li>A plug-and-play, nonparametric self-normalized importance sampling estimator of the TSI score that works with standard reverse-time solvers.</li>
-      <li>A variance-minimizing, state- and time-dependent blend of the Tweedie and TSI estimators, with an analysis of their anti-correlation.</li>
-      <li>A data-only extension using locally fitted proxy scores, and a likelihood-tilting extension to Bayesian inverse problems.</li>
-      <li>A Critic–Gate distillation scheme that amortizes the blending coefficient into a neural gate.</li>
-    </ul>
     <figure>
-      <img src="assets/img/tsi_blend.png" alt="Conditional variance of Tweedie, TSI and blended score signals across diffusion time">
-      <figcaption>Illustration (toy example computed for this page, not a figure from the paper): for a 1-D
-        two-component Gaussian mixture, the conditional variance of the Tweedie and target-score
-        particle signals crosses over in diffusion time, and the pointwise variance-optimal blend
-        sits below both.</figcaption>
+      <img src="assets/img/tsi_helix_samples.png" alt="Samples from a nine-dimensional helix mixture: the true distribution, Blend and Blend (proxy) match it, Tweedie fragments into specks, TSI scatters mass">
+      <figcaption>Samples from a nine-dimensional helix-shaped mixture, projected onto two pairs of
+        principal directions. Tweedie alone collapses onto the reference samples, and the
+        target-score estimator (TSI) alone scatters mass. The blend recovers the target, including when
+        the clean score is replaced by a proxy fitted only to samples (Blend (proxy)).</figcaption>
+    </figure>
+    <ul>
+      <li>A plug-and-play self-normalized importance-sampling estimator of the TSI score that works with standard reverse-time solvers.</li>
+      <li>A variance-minimizing blend of the Tweedie and TSI estimators that adapts to state and diffusion time.</li>
+      <li>Extensions to data-only settings, through locally fitted proxy scores, and to Bayesian inverse problems.</li>
+    </ul>
+    <p>
+      On a Navier–Stokes inverse problem, the blend recovers the continuous posterior that Tweedie
+      fragments, in agreement with a MALA reference.
+    </p>
+    <figure>
+      <img src="assets/img/tsi_ns_posterior.png" alt="Navier-Stokes posterior samples in two principal components for MALA, Tweedie and Blend; Tweedie is fragmented, Blend matches MALA">
+      <figcaption>Navier–Stokes initial-vorticity inversion: posterior samples in the two leading
+        principal components, with the true parameter in cyan. Tweedie collapses onto scattered
+        reference samples; the blend fills in the posterior found by MALA.</figcaption>
     </figure>
   </section>
 </main>

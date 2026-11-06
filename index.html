@@ -94,26 +94,26 @@
       also trains the encoder (orange path), without the latent collapse that joint training with the
       standard denoising loss produces.
     </p>
-    <!-- Fashion-MNIST tiles: Table 1 of the CSEM report (RK4, 20 steps), pending the matched audit.
-         CIFAR-10 tile: current flat CSEM runs, epoch 800, RK4-20, CFG 2.5 (see research.html#csem). -->
+    <!-- Same three tiles as research.html#csem. CIFAR-10 headline: current flat CSEM runs (epoch 800,
+         RK4-20, CFG 2.5); matched comparison: earlier sweep; Fashion-MNIST: CSEM report Table 1. -->
     <div class="stats">
       <div class="stat">
-        <div class="label">Fashion-MNIST FID (lower is better)</div>
-        <div class="value"><span class="from">6.84 →</span> 5.03</div>
-        <div class="ctx">co-trained vs. two-stage baseline</div>
-      </div>
-      <div class="stat">
-        <div class="label">CIFAR-10 FID, co-trained CSEM</div>
+        <div class="label">CIFAR-10 FID (lower is better)</div>
         <div class="value">8.48</div>
-        <div class="ctx">best seed; two-seed mean 8.72&nbsp;±&nbsp;0.34</div>
+        <div class="ctx">co-trained CSEM, best of two seeds (mean 8.72&nbsp;±&nbsp;0.34)</div>
       </div>
       <div class="stat">
-        <div class="label">Target swap alone (Fashion-MNIST)</div>
-        <div class="value"><span class="from">6.84 →</span> 6.69</div>
-        <div class="ctx">frozen autoencoder: most of the gain needs co-training</div>
+        <div class="label">CIFAR-10, matched comparison</div>
+        <div class="value"><span class="from">12.40 →</span> 9.82</div>
+        <div class="ctx">VAE trained without diffusion feedback vs. co-trained</div>
+      </div>
+      <div class="stat">
+        <div class="label">Fashion-MNIST FID</div>
+        <div class="value"><span class="from">6.84 →</span> 5.03</div>
+        <div class="ctx">two-stage baseline vs. co-trained</div>
       </div>
     </div>
-    <a class="more" href="research.html#csem">Architecture, results, and protocol →</a>
+    <a class="more" href="research.html#csem">Architecture and results →</a>
   </section>
 
   <h2>Other projects</h2>
@@ -131,7 +131,7 @@
       <a class="more" href="research.html#lfgi">Project page →</a>
     </div>
     <div class="card">
-      <img src="assets/img/tsi_blend.png" alt="Tweedie and target-score variance across diffusion time">
+      <img src="assets/img/tsi_thumb.png" alt="Samples from a nine-dimensional helix mixture: Tweedie score estimator (fragmented) beside the blended estimator (smooth, matching the target)">
       <h3>Variance-reduced diffusion sampling <span class="tag preprint">Preprint</span></h3>
       <p>Self-normalized target-score estimators and state–time dependent blending with Tweedie.</p>
       <a class="more" href="research.html#tsi">Project page →</a>
