@@ -140,45 +140,140 @@
     <h3>Gated Action Dissipation for Bayesian inverse problems <span class="tag wip">Manuscript</span></h3>
     <div class="meta">with Tan Bui-Thanh · manuscript in final preparation · draft available on request</div>
     <p>
-      Gated Action Dissipation (GAD) samples a posterior by repeated diffusion transport. Each round
-      rebuilds the reverse-diffusion score from the current sample bank and the target's derivatives,
-      blended through the LFGI matrix gate (below) evaluated under the current law, and pushes the bank
-      through the reverse SDE again. No importance weighting, resampling, or inner Markov chain is
-      used, and the density of the transported law is never needed.
+      Gated Action Dissipation (GAD) samples a posterior by repeated diffusion transport of an
+      unweighted sample bank. Each round rebuilds the reverse-diffusion score from the current bank,
+      the target score, and its observed information, then transports fresh Gaussian draws with that
+      frozen score to form the next bank. The rebuilt score uses q-LFGI: the LFGI matrix gate (below)
+      evaluated under the current law rather than the target. No importance weights, resampling,
+      inner Markov chain, or density fit of the transported law are used.
     </p>
-    <ul>
-      <li><b>Convergence theory.</b> A round decreases KL to the target whenever the rebuilt score's error stays a strict fraction of the target/current relative score, and the iteration contracts in KL for near-Gaussian targets.</li>
-      <li><b>What the iteration can see.</b> The gated action, the part of the relative score visible to the rebuilt score, decays across rounds and controls the remaining discrepancy. It also vanishes at fixed points that put the wrong weights on well-separated modes; the manuscript characterizes this failure mode with examples rather than assuming it away.</li>
-      <li><b>Experiments.</b> Darcy log-permeability and Navier–Stokes initial-vorticity inversion, compared with MALA at a matched budget of PDE and derivative evaluations.</li>
-    </ul>
     <figure>
-      <img src="assets/img/gad_darcy.png" alt="Darcy log-permeability: ground truth, posterior means, errors, standard deviations and samples">
-      <figcaption>Darcy log-permeability inversion (32 coefficients, pressure sensors in green):
-        posterior mean, pointwise error, posterior standard deviation and one sample after GAD
-        rounds 1 and 3, compared with a MALA baseline run at a matched budget of expensive
-        PDE/derivative evaluations. Draft result for a single data realization.</figcaption>
+      <img src="assets/img/gad_1d_progression.png" alt="One-dimensional three-mode target and the current law initially and after GAD rounds 1, 2, 3 and 5, converging onto the target">
+      <figcaption>Rebuilding on a one-dimensional three-component mixture (dark), starting from a
+        near-Gaussian law (teal). Each round transports 5,000 endpoints with the rebuilt score; for
+        this illustration only, the next law is a three-component fit to those endpoints, a
+        projection the production algorithm does not use. Forward KL falls from 0.572 to 0.076 after
+        one round and to 0.0035 after five. The separated left mode places this target outside the
+        class covered by the convergence theorem.</figcaption>
     </figure>
-    <div class="fig-row">
-      <figure>
-        <img src="assets/img/gad_ns_pca.png" alt="Navier–Stokes posterior samples in principal-component coordinates">
-        <figcaption>Navier–Stokes initial-vorticity inversion: sample banks in the leading principal
-          components, with the true coefficients marked in cyan. Round 3 moves the bank toward the
-          truth; the budget-matched MALA chains have not mixed.</figcaption>
-      </figure>
-      <figure>
-        <img src="assets/img/gad_ess.png" alt="Mean conditional reference ESS across diffusion time">
-        <figcaption>Mean effective sample size of the conditional reference weights across
-          diffusion time, rounds 1 and 3 (Navier–Stokes). Rebuilding increases usable support over
-          much of the diffusion interval.</figcaption>
-      </figure>
+
+    <h4>What the analysis shows</h4>
+    <ul>
+      <li><b>Which part of the score correction is observable.</b> A conditional Stein–Poisson representation writes the inaccessible target/current relative score and the computable Tweedie/target-score disagreement as two moments of one conditional flux: the first unweighted, the second weighted by observed information. Inverting the mean information channel gives exactly the q-LFGI correction, so its error is exactly the transverse remainder rather than an unspecified gate defect. At the target, q-LFGI reduces to the variance-optimal LFGI gate.</li>
+      <li><b>Convergence from any finite-KL start.</b> For strongly log-concave perturbations of a Gaussian (bounded perturbation Hessian and gradient variation), an exact residual identity gives a certificate θ computed from the target alone. When θ &lt; 1, the population GAD map contracts forward KL by θ<sup>2</sup> per round from every initial density with finite KL, with no smoothness, moment, or proximity assumption on the start. A finite diffusion horizon adds an error that decays exponentially in the horizon.</li>
+      <li><b>Where the theorem stops.</b> The class excludes separated multimodal targets and has not been verified for the inverse posteriors below. In a mode-separation study, first-round KL progress tracks clean-score sensitivity as two modes separate; both fall by orders of magnitude, and mass imbalance persists at large separation.</li>
+    </ul>
+
+    <h4>Nonlinear inverse problems</h4>
+    <p>
+      Two posteriors with curved physical uncertainty test finite-bank GN-GAD, which uses
+      Gauss–Newton curvature and an annealed likelihood path whose final rounds target the full
+      posterior. In <b>acoustic trajectory inversion</b> (16 dimensions), eight
+      time-difference-of-arrival measurements at two receivers constrain the path of a moving source.
+      In <b>joint earthquake location</b> (23 dimensions), five events and three shared velocity
+      parameters are inferred from 24 arrival-time picks at six stations; four of the events are
+      seen by only three picks each. The comparisons are MAP-preconditioned MALA started from
+      MAP–Laplace (MAP-pMALA), annealed MALA and HMC, and local Gauss–Newton MALA (GN-smMALA, with and
+      without annealing), all at a common request allowance.
+    </p>
+    <figure>
+      <img src="assets/img/gad_quake_geometry.png" alt="Earthquake depth versus horizontal offset for events E2 and E4: NUTS reference, annealed GN-GAD, direct GN-GAD and GN-smMALA; both GAD variants recover the curved U-shaped support">
+      <figcaption>Joint earthquake location with uncertain velocities. Rows show events E2 and E4:
+        depth against horizontal offset along the reference's principal direction. Columns show the
+        NUTS reference, annealed and direct GN-GAD after six rounds, and GN-smMALA at the same request
+        allowance. One sampler seed; colors give log probability per bin.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/img/gad_acoustic_geometry.png" alt="Acoustic source position at 5 seconds: NUTS reference, annealed GN-GAD, direct GN-GAD and annealed HMC; the GAD variants cover the full curved band">
+      <figcaption>Acoustic trajectory inversion: source position at the 5 s midpoint for the NUTS
+        reference, annealed and direct GN-GAD, and annealed HMC at the final request allowance. One
+        sampler seed, 10,000 draws per panel; colors give log probability per bin.</figcaption>
+    </figure>
+    <p>
+      Annealing lowers GAD's distributional error in every paired seed of both problems: by 13% for
+      the acoustic trajectory and by half for earthquake location (0.311 → 0.154), where annealed
+      GN-GAD is 42.5% below the best MCMC control, GN-smMALA. MAP-pMALA fits the data well but misses
+      much of the curved support.
+    </p>
+    <figure>
+      <img src="assets/img/gad_accuracy_vs_requests.png" alt="Distributional error versus request allowance for the acoustic and earthquake problems; annealed GN-GAD ends lowest in both">
+      <figcaption>Distributional error against the common request allowance at every recorded round
+        (four acoustic, six earthquake). Markers are five-seed means and shading one sample SD; lower
+        is better. Hollow markers and dashed segments mark rounds at an intermediate likelihood
+        power, measured against the final posterior. Dotted lines are the split-reference discrepancy
+        of the finite NUTS reference.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="results">
+        <thead>
+          <tr><th>Method</th><th class="num">Acoustic (16-D)</th><th class="num">Earthquake (23-D)</th></tr>
+        </thead>
+        <tbody>
+          <tr class="best"><td>Annealed GN-GAD</td><td class="num">0.134 ± 0.012</td><td class="num">0.154 ± 0.019</td></tr>
+          <tr><td>Direct GN-GAD</td><td class="num">0.154 ± 0.009</td><td class="num">0.311 ± 0.104</td></tr>
+          <tr><td>MAP-pMALA</td><td class="num">0.630 ± 0.020</td><td class="num">0.491 ± 0.025</td></tr>
+          <tr><td>Annealed MALA</td><td class="num">0.218 ± 0.001</td><td class="num">0.653 ± 0.020</td></tr>
+          <tr><td>GN-smMALA</td><td class="num">0.312 ± 0.113</td><td class="num">0.267 ± 0.028</td></tr>
+          <tr><td>Annealed GN-smMALA</td><td class="num">0.239 ± 0.026</td><td class="num">0.374 ± 0.021</td></tr>
+          <tr><td>Annealed HMC</td><td class="num">0.213 ± 0.004</td><td class="num">0.359 ± 0.028</td></tr>
+        </tbody>
+        <caption>Distributional error at the final request allowance (27,517 and 27,000 energy,
+          gradient, and curvature requests); five-seed mean ± sample SD, lower is better. Acoustic:
+          joint sliced Wasserstein-2 distance in prior-whitened coefficients, normalized by the
+          reference spread. Earthquake: the same normalized distance averaged over the
+          location/origin-time blocks of events E2–E5.</caption>
+      </table>
     </div>
+    <p class="note neutral">
+      <b>Protocol.</b> Each problem uses one fixed synthetic dataset; the spread is over five sampler
+      seeds, against NUTS-based references that never enter any sampler. Every method is charged the
+      same cumulative count of energy, gradient, and curvature requests, including MAP setup, warmup,
+      and rejected proposals; this matches requests, not FLOPs or wall time. Gauss–Newton curvature,
+      likelihood annealing, and probability-flow transport lie outside the convergence theorem. Other
+      diagnostics trade off differently: MAP-pMALA matches the data-fit statistic best in both
+      problems, annealed GN-GAD's acoustic data-fit ratio is about 2 (target 1), and in the acoustic
+      problem annealed GN-smMALA and annealed HMC have slightly lower maximum event-probability error.
+    </p>
+
     <details>
-      <summary>Navier–Stokes reconstructions</summary>
+      <summary>Algorithmic checks and two-dimensional benchmarks</summary>
+      <p>
+        <b>Gate choice.</b> On an eight-dimensional ridge target with location-dependent anisotropy,
+        seven rebuilding rules run at equal reference counts (1,024) and rounds. After three rounds
+        q-LFGI has the lowest error, a normalized sliced Wasserstein-2 distance of 8.56 ± 0.40%
+        against a target-versus-target sampling scale of 7.87 ± 0.29%. The next best, a local scalar
+        gate, reaches 12.12 ± 0.75%, and the target-score (TSI) estimator fails in every run by round three.
+      </p>
       <figure>
-        <img src="assets/img/gad_navier_stokes.png" alt="Navier–Stokes initial vorticity: ground truth, posterior means, errors and samples">
-        <figcaption>Initial-vorticity reconstruction: ground truth, posterior means, pointwise
-          errors, posterior standard deviations and representative samples for GAD rounds 1 and 3
-          and the budget-matched MALA baseline. Draft result for a single data realization.</figcaption>
+        <img src="assets/img/gad_gate_ablation.png" alt="Gate ablation: exact target and GAD rounds 1 to 3 for q-LFGI, local scalar, local matrix blend and uniform matrix gates">
+        <figcaption>Rows: q-LFGI, local scalar, local matrix blend, and uniform matrix gates. Columns:
+          exact target and GAD rounds 1–3, in the first two of eight ridge coordinates, from one
+          seed. Contours enclose 50% and 90% of the exact target.</figcaption>
+      </figure>
+      <p>
+        <b>Mode separation.</b> For an equal-weight two-Gaussian target, started from the correct
+        components with 0.7/0.3 weights, exact population density calculations (no sampling) compare
+        measured KL progress with clean-score sensitivity as the components separate.
+      </p>
+      <figure>
+        <img src="assets/img/gad_mode_separation.png" alt="Left: first-round KL improvement and clean-score sensitivity versus mode separation. Right: forward KL over 30 rounds for separations 5, 7 and 9">
+        <figcaption>(a) First-round fractional KL improvement and dimensionless clean-score sensitivity
+          against separation in component standard deviations; neither curve is fitted to the other.
+          (b) Forward KL over 30 rebuilding rounds for separations 5, 7, and 9.</figcaption>
+      </figure>
+      <p>
+        <b>Connected two-dimensional targets.</b> Against isotropic MALA and unit-mass HMC, all
+        started from the same broad law and given 24,576 energy, gradient, and Hessian requests,
+        three-round GAD with 4,096 references has the lowest mean error on the Gaussian, unequal-lobe,
+        and S-chain targets, and HMC has the lowest on the ring. Seed-to-seed variation rules out a
+        uniform ranking.
+      </p>
+      <figure>
+        <img src="assets/img/gad_2d_benchmarks.png" alt="Two-dimensional Gaussian, unequal-lobe, ring and S-shaped targets with GAD, MALA and HMC samples">
+        <figcaption>Target, GAD, MALA, and HMC at the matched request allowance (one seed). GAD panels
+          are 60,000 fresh draws from its frozen third-round field; MCMC panels resample the
+          budgeted chain states, so the smoother GAD panels partly reflect the larger native
+          cloud.</figcaption>
       </figure>
     </details>
   </section>

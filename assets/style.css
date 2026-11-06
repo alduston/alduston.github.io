@@ -190,6 +190,7 @@ pre {
 }
 @media (max-width: 680px) {
   body { font-size: 16px; }
+  table.results td.num, table.results th.num { white-space: normal; }
   .wrap { padding: 0 16px; }
   .intro { flex-direction: column; gap: 18px; }
   .intro img.portrait { width: 140px; height: 140px; }

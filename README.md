@@ -8,10 +8,13 @@ Replace the repository contents with this folder (keep `.nojekyll`), commit, and
 Pages deploys from `main`, folder `/ (root)`; the site updates at https://alduston.github.io within a
 minute or two.
 
-This version removes two leftovers from the previous upload: a stale nested copy of the site in
-`alduston.github.io/` and a root-level `style.css`. Every page loads `assets/style.css`, which now
-contains the CV-page rules that previously lived only in the root file. Delete both leftovers from
-the repository when you push.
+Copying this folder over the old checkout does not delete files that are no longer here. Delete
+these from the repository explicitly (`git rm`):
+
+- the stale nested copy of the site in `alduston.github.io/` and the root-level `style.css`
+  (every page loads `assets/style.css`);
+- the retired GAD figures `assets/img/gad_darcy.png`, `gad_ess.png`, `gad_navier_stokes.png`,
+  and `gad_ns_pca.png`.
 
 ## Structure
 
@@ -54,7 +57,23 @@ The results figure and numbers are placeholders from the earlier training config
 - `og_card.png`: the 1200×630 preview image that appears when the site is linked on LinkedIn,
   Slack, or email. It is a render of the diagram. Regenerate it if the diagram changes.
 - `csem_fid_fmnist.png`: placeholder Fashion-MNIST FID curve (see above).
-- `gad_*.png` are taken from the GAD manuscript draft.
+- `gad_*.png` come from the GAD manuscript (draft of 5 Nov 2026), rasterized from the Overleaf
+  figure PDFs at 1760 px wide (2× the 880 px column):
+
+  | Site file | Manuscript figure | Overleaf source |
+  |---|---|---|
+  | `gad_1d_progression.png` | Fig. 1 | `Figures/gad_1d_progression.png` (footer line cropped, background set to white) |
+  | `gad_mode_separation.png` | Fig. 2 | `Figures/gad_empirical_conditioning.pdf` |
+  | `gad_gate_ablation.png` | Fig. 3 | `Figures/gate_ablation_r3_4x4_10k.pdf` |
+  | `gad_2d_benchmarks.png` | Fig. 4 | `Figures/toy_sampler_comparison_60k.pdf` |
+  | `gad_acoustic_geometry.png` | Fig. 5 | `Figures/InverseRefactor/acoustic_geometry.pdf` |
+  | `gad_quake_geometry.png` | Fig. 6 | `Figures/InverseRefactor/quake_geometry.pdf` |
+  | `gad_accuracy_vs_requests.png` | Fig. 7 | `Figures/InverseRefactor/inverse_accuracy_vs_requests.pdf` |
+
+  `gad_thumb.png` (home card and papers list) redraws the E2 row of Fig. 6, NUTS reference beside
+  annealed GN-GAD, from `Figures/InverseRefactor/plot_data/quake_geometry.npz` with the manuscript's
+  bins, colormap, and color scale, without axis text so it reads at card size. The GAD results table
+  in `research.html` copies the primary-metric columns of manuscript Tables 6 and 7.
 - `tsi_blend.png` and `lfgi_gate.png` are toy illustrations generated for the site, and their
   captions say so.
 
@@ -70,3 +89,5 @@ The results figure and numbers are placeholders from the earlier training config
 ## Open items
 
 - Author list for the CSEM technical report (`papers.html`).
+- `assets/Alois_Duston_CV.pdf` still has the old GAD bullet (Darcy and Navier–Stokes). Regenerate
+  it from the CV source with the bullet now on `cv.html`.
