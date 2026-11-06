@@ -90,4 +90,4 @@ The results figure and numbers are placeholders from the earlier training config
 
 - Author list for the CSEM technical report (`papers.html`).
 - `assets/Alois_Duston_CV.pdf` still has the old GAD bullet (Darcy and Navier–Stokes). Regenerate
-  it from the CV source with the bullet now on `cv.html`.
+  it from the CV source with the bullet now on `cv.html`. 
