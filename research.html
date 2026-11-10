@@ -242,14 +242,17 @@
       <li>Extensions to data-only settings, through locally fitted proxy scores, and to Bayesian inverse problems.</li>
     </ul>
     <p>
-      On a Navier–Stokes inverse problem, the blend recovers the continuous posterior that Tweedie
-      fragments, in agreement with a MALA reference.
+      On MNIST deblurring, where the prior is known only through 10,000 sample digits, the blend with
+      a sample-fitted proxy score fills the posterior that Tweedie fragments. It also gives sharper
+      reconstructions than Tweedie or a MALA sampler on a Gaussian-mixture surrogate prior
+      (28.0 dB PSNR, against 27.0 and 26.0).
     </p>
     <figure>
-      <img src="assets/img/tsi_ns_posterior.png" alt="Navier-Stokes posterior samples in two principal components for MALA, Tweedie and Blend; Tweedie is fragmented, Blend matches MALA">
-      <figcaption>Navier–Stokes initial-vorticity inversion: posterior samples in the two leading
-        principal components, with the true parameter in cyan. Tweedie collapses onto scattered
-        reference samples; the blend fills in the posterior found by MALA.</figcaption>
+      <img src="assets/img/tsi_mnist_posterior.png" alt="MNIST deblurring posterior samples in two pairs of principal components for MCMC on a mixture surrogate prior, Blend (proxy score) and Tweedie, with reference posterior contours in cyan; Blend follows the contours, Tweedie collapses to a few isolated points">
+      <figcaption>MNIST deblurring: posterior samples in two pairs of principal directions of the
+        15-dimensional PCA latent space, with importance-sampling reference contours in cyan.
+        Tweedie collapses onto a few reference samples; MCMC on a Gaussian-mixture surrogate prior
+        is too coarse to follow the contours; the blend (proxy score) fills them.</figcaption>
     </figure>
   </section>
 </main>

@@ -76,7 +76,8 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
   - `lfgi_thumb.png`: Fig. 2 plot areas, Tweedie beside LFGI, no axis text.
 - `tsi_*.png` come from the TSI paper (`Paper/Paper_Figures/` in the SISC project):
   - `tsi_helix_samples.png`: the 9-D helix comparison, `5way.png`.
-  - `tsi_ns_posterior.png`: the Navier–Stokes posterior histograms, `NShists2.png`.
+  - `tsi_mnist_posterior.png`: Fig. 4.7, the MNIST deblurring posterior histograms, `MNIST_hist2.png`
+    (alpha flattened onto white, resized to 1760 px wide).
   - `tsi_thumb.png`: top-row plot areas of `5way.png`, Tweedie beside Blend, no axis text.
 
 ## Common edits
