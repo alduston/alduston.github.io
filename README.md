@@ -67,7 +67,7 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
   - `gad_1d_progression.png`: Fig. 1, `gad_1d_progression.png` (footer line cropped, background white).
   - `gad_quake_geometry.png`: Fig. 6, `InverseRefactor/quake_geometry.pdf`.
   - `gad_accuracy_vs_requests.png`: Fig. 7, `InverseRefactor/inverse_accuracy_vs_requests.pdf`.
-  - `gad_thumb.png`: E2 plot areas from the supplied `Figures/InverseRefactor/quake_geometry.pdf`
+  - `gad_mala_vs_annealed_gad.png`: E2 plot areas from the supplied `Figures/InverseRefactor/quake_geometry.pdf`
     (GN-smMALA left, annealed GN-GAD right), retaining the manuscript's bins, colors, probability
     scale, and plotted domain, with axis text and panel letters removed. No density smoothing.
 - `assets/GAD_Manuscript.pdf`: supplied manuscript dated 11 November 2026 (69 pages).
@@ -97,3 +97,10 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
 - Author list for the CSEM technical report (`papers.html`).
 - `assets/Alois_Duston_CV.pdf` still has the old GAD bullet (Darcy and Navier–Stokes). Regenerate
   it from the CV source with the bullet now on `cv.html`.
+
+## GAD card image update
+
+The Home and Papers pages now explicitly load `assets/img/gad_mala_vs_annealed_gad.png` to
+avoid reusing the old thumbnail URL. The left panel is GN-smMALA; the right panel is annealed
+GN-GAD. `gad_thumb.png` contains the same updated pair for older references.
+The CSEM page content, headline values, and plot retain the original supplied website version.
