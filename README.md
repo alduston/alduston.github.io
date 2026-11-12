@@ -4,7 +4,8 @@ Personal academic website. Plain HTML/CSS, no build step.
 
 ## Publish on GitHub Pages
 
-Replace the repository contents with this folder (keep `.nojekyll`), commit, and push to `main`.
+Copy these updated files into the repository root, preserving their relative paths and the other
+repository files (including `.nojekyll`), then commit and push to `main`.
 Pages deploys from `main`, folder `/ (root)`; the site updates at https://alduston.github.io within a
 minute or two.
 
@@ -66,8 +67,10 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
   - `gad_1d_progression.png`: Fig. 1, `gad_1d_progression.png` (footer line cropped, background white).
   - `gad_quake_geometry.png`: Fig. 6, `InverseRefactor/quake_geometry.pdf`.
   - `gad_accuracy_vs_requests.png`: Fig. 7, `InverseRefactor/inverse_accuracy_vs_requests.pdf`.
-  - `gad_thumb.png`: the E2 row of Fig. 6 (NUTS reference, annealed GN-GAD), redrawn from
-    `InverseRefactor/plot_data/quake_geometry.npz` with the manuscript's bins and colors, no axis text.
+  - `gad_thumb.png`: E2 plot areas from the supplied `Figures/InverseRefactor/quake_geometry.pdf`
+    (GN-smMALA left, annealed GN-GAD right), retaining the manuscript's bins, colors, probability
+    scale, and plotted domain, with axis text and panel letters removed. No density smoothing.
+- `assets/GAD_Manuscript.pdf`: supplied manuscript dated 11 November 2026 (69 pages).
 - `lfgi_*.png` come from the LFGI manuscript (draft of 6 Nov 2026), Overleaf `Figs/`:
   - `lfgi_gmm8_samples.png`: Fig. 2, `gmm8_heatmap.png`, re-tiled from one row of seven panels into
     rows of four and three (same panels, order, and axes; figure-wide title dropped).
