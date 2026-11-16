@@ -95,7 +95,7 @@
       standard denoising loss produces.
     </p>
     <!-- Same three tiles as research.html#csem. CIFAR-10 headline: current flat CSEM runs (epoch 800,
-         RK4-20, CFG 2.5); matched comparison: earlier sweep; Fashion-MNIST: CSEM report Table 1. -->
+         RK4-20, CFG 2.5); matched comparison: earlier sweep; Fashion-MNIST: preliminary seed-42 reconstruction-matched comparison (16 Nov 2026). -->
     <div class="stats">
       <div class="stat">
         <div class="label">CIFAR-10 FID (lower is better)</div>
@@ -109,8 +109,8 @@
       </div>
       <div class="stat">
         <div class="label">Fashion-MNIST FID</div>
-        <div class="value"><span class="from">6.84 →</span> 5.03</div>
-        <div class="ctx">two-stage baseline vs. co-trained</div>
+        <div class="value"><span class="from">4.45 →</span> 4.06</div>
+        <div class="ctx">Two-stage Tweedie vs. CSEM co-training.<br>18.5% smaller gap above reconstruction reference; one seed.</div>
       </div>
     </div>
     <a class="more" href="research.html#csem">Architecture and results →</a>

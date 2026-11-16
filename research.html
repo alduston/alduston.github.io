@@ -65,8 +65,9 @@
       <a href="assets/img/csem_cotraining.svg"><img src="assets/img/csem_cotraining.svg" alt="CSEM co-training architecture. Top lane: image, encoder, Gaussian posterior with mean and covariance, sampled latent, decoder, reconstruction loss. Bottom lane: OU noising of the latent, a DiT score network with a factored precision and mean head, and the analytic CSEM target computed from the encoder's mean and covariance. The CSEM loss compares the prediction with the target; its gradient flows back into the encoder for diffusion times below T_K."></a>
       <figcaption>Co-training architecture. The CSEM target (orange) is computed in closed form from the
         encoder's mean and covariance, which opens a gradient path from the score loss into the encoder.
-        In a standard two-stage latent diffusion model the target is the sampled noise, and no gradient
-        reaches the encoder.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
+        In a standard two-stage latent diffusion model the target is the sampled noise, and the encoder
+        remains frozen. This schematic shows a general CSEM parameterization; the FMNIST comparison
+        below uses an ordinary noise-prediction head and full-horizon encoder feedback.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
     </figure>
 
     <h4>What the analytic target changes</h4>
@@ -90,35 +91,56 @@
       </div>
       <div class="stat">
         <div class="label">Fashion-MNIST FID</div>
-        <div class="value"><span class="from">6.84 →</span> 5.03</div>
-        <div class="ctx">two-stage baseline vs. co-trained</div>
+        <div class="value"><span class="from">4.45 →</span> 4.06</div>
+        <div class="ctx">Two-stage Tweedie vs. CSEM co-training.<br>18.5% smaller gap above reconstruction reference; one seed.</div>
       </div>
     </div>
-    <div class="results-row">
-      <figure>
-        <img src="assets/img/csem_fid_fmnist.png" alt="Fashion-MNIST FID versus prior-training epoch for co-trained CSEM, independent CSEM, and independent Tweedie; co-trained CSEM is lowest at every checkpoint">
-        <figcaption>Fashion-MNIST FID during prior training. Solid: co-trained CSEM. Dashed: priors
-          trained on a separately trained VAE, with the CSEM target (blue) or the standard denoising
-          target (red).</figcaption>
-      </figure>
-      <div>
-        <p>
-          Most of the gain comes from letting the score loss shape the latent space. With the
-          autoencoder frozen, swapping in the CSEM target moves Fashion-MNIST FID only from 6.84 to
-          6.69; training both together brings it to 5.03.
-        </p>
-        <p>
-          The CIFAR-10 headline comes from the current, longer runs and the matched comparison from an
-          earlier sweep; each comparison holds the backbone, sampler, and evaluation settings fixed.
-          The technical report has the full protocol.
-        </p>
-      </div>
-    </div>
+    <figure>
+      <a href="assets/img/csem_fid_fmnist_matched.svg"><img src="assets/img/csem_fid_fmnist_matched.png" width="1936" height="1188" loading="lazy" alt="Preliminary Fashion-MNIST comparison for seed 42. Two-stage Tweedie reaches generation FID 4.455; unrouted half-pressure CSEM co-training reaches 4.059. A dashed line marks reconstruction FID 2.316. The generation-FID gap above this reference is reduced by 18.5 percent."></a>
+      <figcaption>Fashion-MNIST generation FID, with the same VAE and score-network architecture and
+        closely matched reconstruction quality. Orange: CSEM co-training. Green: two-stage Tweedie.
+        Dashed gray: measured reconstruction reference (FID 2.316). Single seed (42); guidance is fixed
+        across each curve. The two-stage curve follows 500 VAE-pretraining epochs.</figcaption>
+    </figure>
+    <p>
+      At similar reconstruction FID (2.38 for the two-stage VAE, 2.32 for CSEM), co-training improves
+      generation FID from <b>4.455 to 4.059</b>. Relative to the measured reconstruction reference,
+      this reduces the remaining generation-FID gap by <b>18.5%</b>. The score loss shapes the
+      representation throughout joint training; this comparison uses the original, unrouted CSEM
+      objective with half-strength representation pressure.
+    </p>
+    <p>
+      These are preliminary single-seed results; a repeated-seed comparison is planned. Both methods
+      use 10,000 generated images and the same RK4 sampler with 20 integration steps.
+    </p>
+    <details>
+      <summary>Comparison protocol and data</summary>
+      <p>
+        Both runs use the flat Gaussian-posterior VAE and an 18-layer, width-192 DiT score network.
+        The two-stage baseline trains a VAE for 500 epochs with KL coefficient 0.03, then freezes it
+        and trains the Tweedie score model for 500 epochs. CSEM trains the VAE and score model jointly
+        for 500 epochs, without label-based gradient routing. The horizontal axis shows prior or
+        joint training epochs; the training budgets differ.
+      </p>
+      <p>
+        Guidance was selected from the terminal test-set sweep and held fixed across the displayed
+        curves: CFG 3.0 for Tweedie and 2.0 for CSEM. Evaluation uses Gaussian initialization,
+        temperature 1, the Fashion-MNIST test reference, and the same legacy Inception FID backend.
+        Reconstruction FID is used as an empirical reference. The gap reduction is
+        <code>(4.455 − 4.059) / (4.455 − 2.316) = 18.5%</code>.
+      </p>
+      <p><a href="assets/data/fmnist_reconstruction_matched.csv">Curve data (CSV)</a> ·
+        <a href="assets/data/fmnist_reconstruction_matched.json">Protocol and exact measurements (JSON)</a></p>
+    </details>
+    <p>
+      The CIFAR-10 headline comes from the current, longer runs and its matched comparison from an
+      earlier sweep. The technical report has the full protocol.
+    </p>
 
     <h4>Implementation</h4>
     <ul class="compact">
       <li>PyTorch; LightningDiT score backbone with adaLN-zero conditioning; class-conditional VAE with perceptual and PatchGAN losses; classifier-free guidance.</li>
-      <li>Routed gradients: the representation loss reaches the encoder only at small diffusion times, while the score network trains on the full horizon with the encoder detached.</li>
+      <li>Fashion-MNIST comparison: fully joint encoder and score-network training over the diffusion horizon, with half-strength representation feedback and no label-based gradient routing.</li>
     </ul>
   </section>
 

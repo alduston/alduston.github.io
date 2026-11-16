@@ -1,0 +1,40 @@
+{
+  "updated": "2026-11-16",
+  "status": "preliminary single-seed result",
+  "seed": 42,
+  "n_training_seeds": 1,
+  "architecture": "flat_three_encoder, DiT width192/depth18/6 heads",
+  "co_training_representation_factor": 0.5,
+  "stored_rep_multiplier": 0.25,
+  "label_routing": false,
+  "two_stage_beta0": 0.03,
+  "two_stage_vae_epochs": 500,
+  "prior_or_joint_epochs": 500,
+  "cfg_selection": "Selected using terminal test-grid FID; each selected CFG is fixed across the displayed curve.",
+  "fixed_cfg": {
+    "indep_tweedie": 3.0,
+    "unrouted_csem_a0p5_s42": 2.0
+  },
+  "reconstruction_reference_fid": 2.31571040014029,
+  "two_stage_reconstruction_fid": 2.3779708339246213,
+  "two_stage_generation_fid": 4.454898680734743,
+  "co_training_generation_fid": 4.059284854396196,
+  "reduction_in_gap_percent": 18.49364218789619,
+  "reduction_in_raw_fid_percent": 8.880422534622014,
+  "gap_formula": "100 * (FID_tweedie - FID_csem) / (FID_tweedie - reconstruction_reference)",
+  "reference_interpretation": "Measured posterior-sample reconstruction FID; a diagnostic reference, not a proven lower bound on generation FID.",
+  "evaluation": {
+    "num_eval": 10000,
+    "split": "test",
+    "backend": "inception-legacy",
+    "rk4_steps": 20,
+    "init": "gaussian",
+    "temperature": 1.0,
+    "decode_time": 0.0001
+  },
+  "source_note": "Two-stage measurements from tweedie.log; joint measurements from the user-supplied full half-pressure unrouted output, retained as an evaluation excerpt. No confidence band is estimated from one seed.",
+  "source_sha256": {
+    "tweedie.log": "30e7514052141988a6188ec04d75ac353bbfd14dcb5128301e28aadc58ae6096",
+    "unrouted_half_seed42_complete.log": "550bff44b50c7bfe7c701277fabaaf9ec898f50c6cc33ac372e92c2ac52b9e88"
+  }
+}

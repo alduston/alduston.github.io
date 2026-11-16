@@ -32,24 +32,40 @@ assets/img/       Figures, diagram, social preview card, portrait
 tools/            plot_training_curves.py (regenerates the CSEM results figure)
 ```
 
-## Updating the CSEM results when the new runs finish
+## Current Fashion-MNIST comparison (16 November 2026)
 
-The CIFAR-10 numbers come from the current runs. The Fashion-MNIST figure and numbers come from the
-earlier training configuration and are waiting on the architecture-matched audit.
+The homepage and research page use the preliminary seed-42, reconstruction-matched comparison:
 
-1. Export the Fashion-MNIST runs to a long CSV, one row per regime, seed, and epoch:
-   `regime,seed,epoch,fid`, where regime is `cotrained_csem`, `indep_csem`, or `indep_tweedie`.
-2. Regenerate the figure in site style, with a 95% band over seeds:
-   ```
-   python tools/plot_training_curves.py runs_fmnist.csv assets/img/csem_fid_fmnist
-   ```
-   This overwrites `csem_fid_fmnist.png` and writes an `.svg` alongside it. The new figure uses
-   orange for co-trained CSEM, blue for two-stage with the CSEM target, and green for two-stage with
-   the denoising target, so update the colour words in the figure caption in `research.html`.
-3. Update the three stat tiles, which appear identically in `research.html#csem` and `index.html`,
-   and the Fashion-MNIST sentence beside the figure in `research.html#csem`.
-4. Once the CSEM repository has a project-specific README, uncomment the `code` link in the CSEM
-   `meta` line of `research.html`.
+| Method | Fixed CFG | Epoch-500 generation FID | Posterior reconstruction FID |
+|---|---:|---:|---:|
+| Two-stage Tweedie, beta0=0.03 | 3.0 | 4.454898680734743 | 2.3779708339246213 |
+| Unrouted half-pressure CSEM co-training | 2.0 | 4.059284854396196 | 2.31571040014029 |
+
+The 18.5% headline measures the reduction in the generation-FID gap above the measured CSEM
+reconstruction reference: `(FID_Tweedie - FID_CSEM) / (FID_Tweedie - 2.31571040014029)`.
+Reconstruction is an empirical comparison reference, not a mathematically guaranteed lower bound.
+The raw generation-FID reduction is 8.9%. The site does not use the newer0.25-strength run in this
+particular comparison because its reconstruction FID is1.915 rather than approximately2.3.
+
+Both runs use the same flat VAE and width-192/depth-18 DiT architecture,500 prior/joint epochs,
+10,000 samples, Gaussian starts and RK4-20. The two-stage pipeline additionally has500 VAE
+pretraining epochs. These are preliminary test-grid-selected single-seed results, with one fixed
+CFG per curve. No seed uncertainty band is inferred. The frozen-CSEM target-only curve is omitted
+from this focused comparison. The full-half-pressure run's finalization originally reported a CPU
+reload-check drift; the supplied data confirm all500 epochs and all evaluations, while subsequent
+checkpoint recovery was not observed here. No claim of a verified completion record is added.
+
+The plot has a new asset name to avoid reusing the cached historical figure. Reproduce it with:
+
+```bash
+python tools/plot_fmnist_matched.py
+```
+
+Inputs are `assets/data/fmnist_reconstruction_matched.csv` and `.json`; outputs are
+`assets/img/csem_fid_fmnist_matched.png` and `.svg`. The JSON retains exact endpoints and selection,
+evaluation, and source provenance. The homepage and research stat tiles must be updated together.
+When repeated-seed comparisons are available, use one common cohort and a frozen guidance rule;
+retain the original single-seed measurements in the source history.
 
 ## Figures
 
@@ -58,7 +74,8 @@ earlier training configuration and are waiting on the architecture-matched audit
   but characters that were not in the original labels fall back to system fonts.
 - `og_card.png`: the 1200×630 preview image that appears when the site is linked on LinkedIn,
   Slack, or email. It is a render of the diagram. Regenerate it if the diagram changes.
-- `csem_fid_fmnist.png`: placeholder Fashion-MNIST FID curve (see above).
+- `csem_fid_fmnist_matched.png` / `.svg`: current measured two-curve comparison (see above).
+- `csem_fid_fmnist.png`: historical figure, retained as an unused asset.
 Each project section is a short pitch: a few plain-language points, one or two figures from the
 paper, and a sentence of headline results. Detailed tables stay in the papers.
 
@@ -103,4 +120,4 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
 The Home and Papers pages now explicitly load `assets/img/gad_mala_vs_annealed_gad.png` to
 avoid reusing the old thumbnail URL. The left panel is GN-smMALA; the right panel is annealed
 GN-GAD. `gad_thumb.png` contains the same updated pair for older references.
-The CSEM page content, headline values, and plot retain the original supplied website version.
+The CSEM FMNIST result now uses the reconstruction-matched seed-42 comparison described above.
