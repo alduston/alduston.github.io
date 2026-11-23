@@ -29,43 +29,37 @@ papers.html       Preprints and manuscripts in preparation, with BibTeX
 cv.html           HTML CV (mirrors assets/Alois_Duston_CV.pdf)
 assets/style.css
 assets/img/       Figures, diagram, social preview card, portrait
-tools/            plot_training_curves.py (regenerates the CSEM results figure)
+tools/            plot_cifar_matched.py (regenerates the CSEM results figure)
 ```
 
-## Current Fashion-MNIST comparison (16 November 2026)
+## Current CIFAR-10 comparison (23 November 2026)
 
-The homepage and research page use the preliminary seed-42, reconstruction-matched comparison:
+The homepage and research page use one architecture-matched comparison, averaged over development seeds 42 and 43:
 
-| Method | Fixed CFG | Epoch-500 generation FID | Posterior reconstruction FID |
+| Method | Final CFG | Epoch-800 generation FID (mean ± sample SD) | Mean reconstruction FID |
 |---|---:|---:|---:|
-| Two-stage Tweedie, beta0=0.03 | 3.0 | 4.454898680734743 | 2.3779708339246213 |
-| Unrouted half-pressure CSEM co-training | 2.0 | 4.059284854396196 | 2.31571040014029 |
+| Two-stage Tweedie, beta0=0.03 | 3.0 | 10.912353 ± 0.332405 | 4.533206 |
+| Historical CSEM co-training | 2.5 | 8.672417 ± 0.078553 | 4.967020 |
 
-The 18.5% headline measures the reduction in the generation-FID gap above the measured CSEM
-reconstruction reference: `(FID_Tweedie - FID_CSEM) / (FID_Tweedie - 2.31571040014029)`.
-Reconstruction is an empirical comparison reference, not a mathematically guaranteed lower bound.
-The raw generation-FID reduction is 8.9%. The site does not use the newer0.25-strength run in this
-particular comparison because its reconstruction FID is1.915 rather than approximately2.3.
-
-Both runs use the same flat VAE and width-192/depth-18 DiT architecture,500 prior/joint epochs,
-10,000 samples, Gaussian starts and RK4-20. The two-stage pipeline additionally has500 VAE
-pretraining epochs. These are preliminary test-grid-selected single-seed results, with one fixed
-CFG per curve. No seed uncertainty band is inferred. The frozen-CSEM target-only curve is omitted
-from this focused comparison. The full-half-pressure run's finalization originally reported a CPU
-reload-check drift; the supplied data confirm all500 epochs and all evaluations, while subsequent
-checkpoint recovery was not observed here. No claim of a verified completion record is added.
+The headline is the 20.5% reduction in raw generation FID. These are
+architecture-matched, not exactly reconstruction-matched, development results.
+Both regimes use the same flat VAE and width-384/depth-12 DiT architecture,
+800 prior/joint epochs, 10,000 samples, Gaussian starts and RK4-20. The
+two-stage pipeline additionally has 800 VAE-pretraining epochs.
+The log-scale learning curves use only measured common CFG 2.5 evaluations,
+with mean ± sample SD across the two seeds. A diamond denotes Tweedie's
+optimized final evaluation at CFG 3.0; its intermediate CFG 3.0 curve is not available.
 
 The plot has a new asset name to avoid reusing the cached historical figure. Reproduce it with:
 
 ```bash
-python tools/plot_fmnist_matched.py
+python tools/plot_cifar_matched.py
 ```
 
-Inputs are `assets/data/fmnist_reconstruction_matched.csv` and `.json`; outputs are
-`assets/img/csem_fid_fmnist_matched.png` and `.svg`. The JSON retains exact endpoints and selection,
-evaluation, and source provenance. The homepage and research stat tiles must be updated together.
-When repeated-seed comparisons are available, use one common cohort and a frozen guidance rule;
-retain the original single-seed measurements in the source history.
+Inputs are `assets/data/cifar_matched.csv` and `.json`; outputs are
+`assets/img/csem_fid_cifar_matched.png` and `.svg`. The JSON retains exact endpoints,
+protocol and source provenance. The homepage and research stat tiles must be updated together.
+Historical FMNIST data and plotting scripts remain in the source but are no longer displayed.
 
 ## Figures
 
@@ -74,7 +68,8 @@ retain the original single-seed measurements in the source history.
   but characters that were not in the original labels fall back to system fonts.
 - `og_card.png`: the 1200×630 preview image that appears when the site is linked on LinkedIn,
   Slack, or email. It is a render of the diagram. Regenerate it if the diagram changes.
-- `csem_fid_fmnist_matched.png` / `.svg`: current measured two-curve comparison (see above).
+- `csem_fid_cifar_matched.png` / `.svg`: current measured two-seed CIFAR comparison (see above).
+- `csem_fid_fmnist_matched.png` / `.svg`: historical comparison, retained as unused assets.
 - `csem_fid_fmnist.png`: historical figure, retained as an unused asset.
 Each project section is a short pitch: a few plain-language points, one or two figures from the
 paper, and a sentence of headline results. Detailed tables stay in the papers.
@@ -120,4 +115,4 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
 The Home and Papers pages now explicitly load `assets/img/gad_mala_vs_annealed_gad.png` to
 avoid reusing the old thumbnail URL. The left panel is GN-smMALA; the right panel is annealed
 GN-GAD. `gad_thumb.png` contains the same updated pair for older references.
-The CSEM FMNIST result now uses the reconstruction-matched seed-42 comparison described above.
+The CSEM results now use the two-seed architecture-matched CIFAR-10 comparison described above.

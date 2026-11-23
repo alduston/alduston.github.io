@@ -94,23 +94,12 @@
       also trains the encoder (orange path), without the latent collapse that joint training with the
       standard denoising loss produces.
     </p>
-    <!-- Same three tiles as research.html#csem. CIFAR-10 headline: current flat CSEM runs (epoch 800,
-         RK4-20, CFG 2.5); matched comparison: earlier sweep; Fashion-MNIST: preliminary seed-42 reconstruction-matched comparison (16 Nov 2026). -->
-    <div class="stats">
+    <!-- Same two-seed, architecture-matched CIFAR-10 comparison as research.html#csem. -->
+    <div class="stats single">
       <div class="stat">
-        <div class="label">CIFAR-10 FID (lower is better)</div>
-        <div class="value">8.48</div>
-        <div class="ctx">co-trained CSEM, best of two seeds (mean 8.72&nbsp;±&nbsp;0.34)</div>
-      </div>
-      <div class="stat">
-        <div class="label">CIFAR-10, matched comparison</div>
-        <div class="value"><span class="from">12.40 →</span> 9.82</div>
-        <div class="ctx">VAE trained without diffusion feedback vs. co-trained</div>
-      </div>
-      <div class="stat">
-        <div class="label">Fashion-MNIST FID</div>
-        <div class="value"><span class="from">4.45 →</span> 4.06</div>
-        <div class="ctx">Two-stage Tweedie vs. CSEM co-training.<br>18.5% smaller gap above reconstruction reference; one seed.</div>
+        <div class="label">CIFAR-10 · architecture-matched generation FID (lower is better)</div>
+        <div class="value"><span class="from">10.91 →</span> 8.67</div>
+        <div class="ctx"><b>20.5% lower FID</b> from two-stage Tweedie to joint CSEM training. Mean over two seeds, with guidance tuned separately for each method.</div>
       </div>
     </div>
     <a class="more" href="research.html#csem">Architecture and results →</a>

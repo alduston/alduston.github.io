@@ -1,0 +1,92 @@
+{
+  "dataset": "CIFAR-10",
+  "seeds": [
+    42,
+    43
+  ],
+  "cohort": "development; selected configurations, independent validation in progress",
+  "n_samples": 10000,
+  "sampling": {
+    "method": "RK4",
+    "steps": 20,
+    "t_max": 1.35,
+    "temperature": 1,
+    "initialization": "Gaussian",
+    "fid_backend": "ImageNet Inception-v3"
+  },
+  "curve_cfg": 2.5,
+  "regimes": {
+    "csem": {
+      "source_archive": "ACES_CIFAR_CSEM_Coefficients_results.zip",
+      "final_cfg": 2.5,
+      "final_epoch": 800,
+      "pretraining_epochs": 0,
+      "per_seed": [
+        {
+          "seed": 42,
+          "source_path": "results/cifar_A_historical_s42/dataframes/eval_metrics.csv",
+          "fid": 8.616871482761496,
+          "recon_fid": 4.974542403574162
+        },
+        {
+          "seed": 43,
+          "source_path": "results/cifar_A_historical_s43/dataframes/eval_metrics.csv",
+          "fid": 8.727962733936522,
+          "recon_fid": 4.959497082277267
+        }
+      ],
+      "mean_final_fid": 8.67241710834901,
+      "sd_final_fid": 0.0785533770363587,
+      "mean_recon_fid": 4.967019742925714
+    },
+    "tweedie": {
+      "source_archive": "ACES_CIFAR_Tweedie_Sweep_results.zip",
+      "final_cfg": 3.0,
+      "final_epoch": 800,
+      "pretraining_epochs": 800,
+      "per_seed": [
+        {
+          "seed": 42,
+          "source_path": "results/cifar_tw_b030_s42/dataframes/eval_metrics.csv",
+          "fid": 10.677307476593512,
+          "recon_fid": 4.485461960730902
+        },
+        {
+          "seed": 43,
+          "source_path": "results/cifar_tw_b030_s43/dataframes/eval_metrics.csv",
+          "fid": 11.147398515006785,
+          "recon_fid": 4.580949422796834
+        }
+      ],
+      "mean_final_fid": 10.912352995800148,
+      "sd_final_fid": 0.33240456103705085,
+      "mean_recon_fid": 4.533205691763868
+    }
+  },
+  "reduction_percent": 20.52660767401152,
+  "architecture": {
+    "latent_shape": [
+      8,
+      8,
+      8
+    ],
+    "vae_parameters": 14184467,
+    "prior_parameters": 32540560,
+    "DiT_width": 384,
+    "DiT_depth": 12
+  },
+  "configuration": {
+    "csem": {
+      "score_weight": 0.05,
+      "terminal_kl_weight": 0.6,
+      "terminal_time": 1.05,
+      "boundary_weight": 0.05,
+      "representation_multiplier": 1,
+      "latent_anchor": "ou_partial"
+    },
+    "tweedie": {
+      "beta0": 0.03,
+      "latent_anchor": "none"
+    }
+  }
+}

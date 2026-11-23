@@ -66,8 +66,8 @@
       <figcaption>Co-training architecture. The CSEM target (orange) is computed in closed form from the
         encoder's mean and covariance, which opens a gradient path from the score loss into the encoder.
         In a standard two-stage latent diffusion model the target is the sampled noise, and the encoder
-        remains frozen. This schematic shows a general CSEM parameterization; the FMNIST comparison
-        below uses an ordinary noise-prediction head and full-horizon encoder feedback.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
+        remains frozen. The CIFAR-10 comparison below uses the same factored score-head architecture
+        for both methods.<span class="mobile-hint"> Tap the diagram to open it full size.</span></figcaption>
     </figure>
 
     <h4>What the analytic target changes</h4>
@@ -78,69 +78,53 @@
     </ul>
 
     <h4>Results</h4>
-    <div class="stats">
+    <div class="stats single">
       <div class="stat">
-        <div class="label">CIFAR-10 FID (lower is better)</div>
-        <div class="value">8.48</div>
-        <div class="ctx">co-trained CSEM, best of two seeds (mean 8.72&nbsp;±&nbsp;0.34)</div>
-      </div>
-      <div class="stat">
-        <div class="label">CIFAR-10, matched comparison</div>
-        <div class="value"><span class="from">12.40 →</span> 9.82</div>
-        <div class="ctx">VAE trained without diffusion feedback vs. co-trained, same score head</div>
-      </div>
-      <div class="stat">
-        <div class="label">Fashion-MNIST FID</div>
-        <div class="value"><span class="from">4.45 →</span> 4.06</div>
-        <div class="ctx">Two-stage Tweedie vs. CSEM co-training.<br>18.5% smaller gap above reconstruction reference; one seed.</div>
+        <div class="label">CIFAR-10 · architecture-matched generation FID (lower is better)</div>
+        <div class="value"><span class="from">10.91 →</span> 8.67</div>
+        <div class="ctx"><b>20.5% lower FID</b> from two-stage Tweedie to joint CSEM training. Mean over two seeds, with guidance tuned separately for each method.</div>
       </div>
     </div>
     <figure>
-      <a href="assets/img/csem_fid_fmnist_matched.svg"><img src="assets/img/csem_fid_fmnist_matched.png" width="1936" height="1188" loading="lazy" alt="Preliminary Fashion-MNIST comparison for seed 42. Two-stage Tweedie reaches generation FID 4.455; unrouted half-pressure CSEM co-training reaches 4.059. A dashed line marks reconstruction FID 2.316. The generation-FID gap above this reference is reduced by 18.5 percent."></a>
-      <figcaption>Fashion-MNIST generation FID, with the same VAE and score-network architecture and
-        closely matched reconstruction quality. Orange: CSEM co-training. Green: two-stage Tweedie.
-        Dashed gray: measured reconstruction reference (FID 2.316). Single seed (42); guidance is fixed
-        across each curve. The two-stage curve follows 500 VAE-pretraining epochs.</figcaption>
+      <a href="assets/img/csem_fid_cifar_matched.svg"><img src="assets/img/csem_fid_cifar_matched.png" width="1936" height="1188" loading="lazy" alt="CIFAR-10 generation FID on a logarithmic axis, averaged over seeds 42 and 43. CSEM converges faster and reaches FID 8.67; two-stage Tweedie reaches 11.22 at common CFG 2.5 and 10.91 at its optimized final CFG 3.0. Shaded regions are one sample standard deviation."></a>
+      <figcaption>CIFAR-10 convergence (logarithmic FID axis), mean ± one sample standard deviation
+        across seeds 42 and 43. Both curves use CFG 2.5 throughout; the orange diamond marks the
+        separately tuned final Tweedie result at CFG 3.0. The two-stage curve follows 800 VAE-pretraining epochs.</figcaption>
     </figure>
     <p>
-      At similar reconstruction FID (2.38 for the two-stage VAE, 2.32 for CSEM), co-training improves
-      generation FID from <b>4.455 to 4.059</b>. Relative to the measured reconstruction reference,
-      this reduces the remaining generation-FID gap by <b>18.5%</b>. The score loss shapes the
-      representation throughout joint training; this comparison uses the original, unrouted CSEM
-      objective with half-strength representation pressure.
+      At the shared architecture and sampling budget, CSEM reaches a generation FID of
+      8.67 ± 0.08, compared with 10.91 ± 0.33 for the tuned two-stage baseline.
+      CSEM also surpasses the final optimized Tweedie FID by epoch 250 of joint training.
+      The reconstruction FIDs are 4.97 and 4.53 respectively; the comparison is capacity-matched,
+      not exactly reconstruction-matched.
     </p>
     <p>
-      These are preliminary single-seed results; a repeated-seed comparison is planned. Both methods
+      These are two development seeds; independent validation is underway. Both methods
       use 10,000 generated images and the same RK4 sampler with 20 integration steps.
     </p>
     <details>
       <summary>Comparison protocol and data</summary>
       <p>
-        Both runs use the flat Gaussian-posterior VAE and an 18-layer, width-192 DiT score network.
-        The two-stage baseline trains a VAE for 500 epochs with KL coefficient 0.03, then freezes it
-        and trains the Tweedie score model for 500 epochs. CSEM trains the VAE and score model jointly
-        for 500 epochs, without label-based gradient routing. The horizontal axis shows prior or
+        Both regimes use a flat Gaussian-posterior VAE with 512 latent coordinates and a
+        12-layer, width-384 DiT score network. The two-stage baseline trains a VAE for 800 epochs
+        with KL coefficient 0.03, then freezes it and trains the Tweedie score model for 800 epochs.
+        CSEM trains the VAE and score model jointly for 800 epochs. The horizontal axis shows prior or
         joint training epochs; the training budgets differ.
       </p>
       <p>
-        Guidance was selected from the terminal test-set sweep and held fixed across the displayed
-        curves: CFG 3.0 for Tweedie and 2.0 for CSEM. Evaluation uses Gaussian initialization,
-        temperature 1, the Fashion-MNIST test reference, and the same legacy Inception FID backend.
-        Reconstruction FID is used as an empirical reference. The gap reduction is
-        <code>(4.455 − 4.059) / (4.455 − 2.316) = 18.5%</code>.
+        Both curves use the common recorded CFG of 2.5. Final guidance is selected from the
+        development sweep using the two-seed mean: CFG 3.0 for Tweedie and 2.5 for CSEM.
+        Evaluation uses Gaussian initialization, temperature 1, terminal diffusion time 1.35,
+        the CIFAR-10 test reference and the same Inception FID backend.
       </p>
-      <p><a href="assets/data/fmnist_reconstruction_matched.csv">Curve data (CSV)</a> ·
-        <a href="assets/data/fmnist_reconstruction_matched.json">Protocol and exact measurements (JSON)</a></p>
+      <p><a href="assets/data/cifar_matched.csv">Curve data (CSV)</a> ·
+        <a href="assets/data/cifar_matched.json">Protocol and exact measurements (JSON)</a></p>
     </details>
-    <p>
-      The CIFAR-10 headline comes from the current, longer runs and its matched comparison from an
-      earlier sweep. The technical report has the full protocol.
-    </p>
 
     <h4>Implementation</h4>
     <ul class="compact">
-      <li>PyTorch; LightningDiT score backbone with adaLN-zero conditioning; class-conditional VAE with perceptual and PatchGAN losses; classifier-free guidance.</li>
-      <li>Fashion-MNIST comparison: fully joint encoder and score-network training over the diffusion horizon, with half-strength representation feedback and no label-based gradient routing.</li>
+      <li>PyTorch; flat Gaussian-posterior VAE with perceptual and PatchGAN losses; class-conditional factored DiT score backbone with adaLN-zero conditioning and classifier-free guidance.</li>
+      <li>CIFAR-10 comparison: joint representation and score training with terminal KL and small-time boundary penalties; two-stage Tweedie baseline with independently trained, frozen VAE.</li>
     </ul>
   </section>
 
