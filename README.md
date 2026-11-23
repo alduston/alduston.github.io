@@ -58,8 +58,14 @@ python tools/plot_cifar_matched.py
 
 Inputs are `assets/data/cifar_matched.csv` and `.json`; outputs are
 `assets/img/csem_fid_cifar_matched.png` and `.svg`. The JSON retains exact endpoints,
-protocol and source provenance. The homepage and research stat tiles must be updated together.
-Historical FMNIST data and plotting scripts remain in the source but are no longer displayed.
+protocol and source provenance. The homepage and research CIFAR stat tiles must be updated together.
+
+The homepage also retains the preliminary, reconstruction-matched Fashion-MNIST seed-42
+tile: two-stage Tweedie FID 4.454899 versus unrouted half-pressure CSEM FID 4.059285.
+Relative to the measured reconstruction reference (2.315710), this is an 18.5% reduction in
+the remaining FID gap. The historical Fashion-MNIST data and plotting scripts remain in the
+source (`assets/data/fmnist_reconstruction_matched.csv` and `.json`); its learning curve is
+replaced on the research page by the CIFAR-10 figure.
 
 ## Figures
 

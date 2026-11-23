@@ -76,6 +76,7 @@ p { margin: 0 0 14px; }
 /* stat tiles: label, value, context */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 4px 0 14px; }
 .stats.single { grid-template-columns: 1fr; }
+.stats.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .stat { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
 .stat .label { font: 14px/1.3 var(--sans); color: var(--muted); }
 .stat .value { font: 600 22px/1.25 var(--sans); color: var(--text); margin: 3px 0 2px; }
@@ -196,7 +197,7 @@ pre {
   .wrap { padding: 0 16px; }
   .intro { flex-direction: column; gap: 18px; }
   .intro img.portrait { width: 140px; height: 140px; }
-  .cards, .cards.three, .fig-row, .stats { grid-template-columns: 1fr; }
+  .cards, .cards.three, .fig-row, .stats, .stats.two { grid-template-columns: 1fr; }
   .feature { padding: 14px 14px 12px; }
   .pub { flex-direction: column; gap: 8px; }
   .pub img { width: 100%; height: 140px; }
