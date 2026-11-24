@@ -18,7 +18,7 @@ these from the repository explicitly (`git rm`):
   `gad_navier_stokes.png`, `gad_ns_pca.png`, `gad_acoustic_geometry.png`, `gad_gate_ablation.png`,
   `gad_mode_separation.png`, `gad_2d_benchmarks.png`, `lfgi_gate.png`, `lfgi_funnel_samples.png`,
   `lfgi_gmm24_samples.png`, `lfgi_score_rmse_sweep.png`, `lfgi_gate_error_t04.png`,
-  `lfgi_gate_error_t08.png`, `lfgi_gate_error_t16.png`, and `tsi_blend.png`.
+  `lfgi_gate_error_t08.png`, `lfgi_gate_error_t16.png`, `lfgi_darcy_density.png`, and `tsi_blend.png`.
 
 ## Structure
 
@@ -29,7 +29,8 @@ papers.html       Preprints and manuscripts in preparation, with BibTeX
 cv.html           HTML CV (mirrors assets/Alois_Duston_CV.pdf)
 assets/style.css
 assets/img/       Figures, diagram, social preview card, portrait
-tools/            plot_cifar_matched.py (regenerates the CSEM results figure)
+tools/            plot_cifar_matched.py (CSEM results figure), plot_lfgi_density_error.py and
+                  compute_lfgi_density_grid.py (LFGI density figure and its data)
 ```
 
 ## Current CIFAR-10 comparison (23 November 2026)
@@ -92,9 +93,19 @@ paper, and a sentence of headline results. Detailed tables stay in the papers.
 - `lfgi_*.png` come from the LFGI manuscript (draft of 6 Nov 2026), Overleaf `Figs/`:
   - `lfgi_gmm8_samples.png`: Fig. 2, `gmm8_heatmap.png`, re-tiled from one row of seven panels into
     rows of four and three (same panels, order, and axes; figure-wide title dropped).
-  - `lfgi_darcy_density.png`: Fig. 5, `darcy_density_array.png`, left-column panels for LFGI, Tweedie,
-    and MAP–Laplace placed side by side. Fig. 5 mislabels some of its other rows; those are not used.
   - `lfgi_thumb.png`: Fig. 2 plot areas, Tweedie beside LFGI, no axis text.
+- `lfgi_density_error.png` (24 Nov 2026) is drawn for the site from the current LFGI manuscript's
+  acoustic application (bank seed 22003, N = 450, the manuscript display bank) by
+  `tools/plot_lfgi_density_error.py` from `assets/data/lfgi_acoustic_density_grid.npz`. The data file
+  records its provenance: LFGI-GN and DPSMC-gate densities come from the frozen probability-flow code in
+  `Code/RunBundles/Acoustic2D_S2_20261119.zip`; Tweedie uses the closed form of its flow density,
+  checked against the integrated flow; the Gaussian mixture is the bank-only BIC selection. The plot
+  script averages every density over 6 cm cells (3 x 3 grid points); Tweedie's 2 mm kernels are
+  integrated exactly over each cell, so its panel is a histogram of the samples rather than missing
+  them between grid points. RMS errors reproduce the manuscript (LFGI 0.10 nats here vs 0.098
+  averaged over 20 banks).
+  `tools/compute_lfgi_density_grid.py` regenerates the data file from the LFGI full project
+  (about 5 minutes on two cores).
 - `tsi_*.png` come from the TSI paper (`Paper/Paper_Figures/` in the SISC project):
   - `tsi_helix_samples.png`: the 9-D helix comparison, `5way.png`.
   - `tsi_mnist_posterior.png`: Fig. 4.7, the MNIST deblurring posterior histograms, `MNIST_hist2.png`

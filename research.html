@@ -213,15 +213,22 @@
     <p>
       Across mixture and funnel benchmarks, LFGI has the lowest score error of the six estimators, about
       half that of the best alternative on the mixtures, and produces the samples closest to the
-      target. In a Darcy-flow inverse problem, the normalized density that LFGI builds from MCMC pilot
-      samples tracks the true posterior energy far more closely than the standard MAP–Laplace Gaussian
-      approximation.
+      target. In acoustic source localization, galactic mass inference, and earthquake location, the
+      normalized density that LFGI builds from posterior samples has the lowest held-out log-density
+      and model-evidence errors of the tested methods at the largest bank sizes.
     </p>
     <figure>
-      <img src="assets/img/lfgi_darcy_density.png" alt="Darcy-flow density energy against true posterior energy for LFGI, Tweedie and MAP-Laplace; LFGI points lie tightly along the diagonal">
-      <figcaption>Darcy-flow posterior: density energy from each model, after an affine fit, against
-        the true posterior energy on held-out samples. LFGI's points lie along the diagonal; Tweedie
-        scatters widely and MAP–Laplace captures only part of the trend.</figcaption>
+      <img src="assets/img/lfgi_density_error.png" width="1760" height="927" loading="lazy" alt="Left: the exact two-microphone source-localization posterior, a curved band. Right: maps of log-density error for four densities built from the same 450 posterior samples. LFGI is nearly white (accurate) across the band; the DPSMC gate is patchy and too low in the tails; Tweedie is speckled, with mass only in the cells that contain samples and far too little everywhere else; the Gaussian mixture misplaces mass at the bend and cuts off the tails.">
+      <figcaption>Two-microphone source localization. One measured arrival-time difference confines
+        the source to a curved band (left). The other panels map each density's log error,
+        log&nbsp;q&nbsp;−&nbsp;log&nbsp;p, over the region holding 99.9% of the posterior mass; white is
+        exact. Each pixel compares the densities averaged over a 6&nbsp;cm cell. All four use the
+        same 450 posterior samples: LFGI, the DPSMC gate, and Tweedie are probability-flow densities
+        that differ only in the score estimate, and the fourth is a Gaussian mixture fitted to the
+        samples. LFGI's error stays below 0.25 nats on 98.5% of the posterior mass. Tweedie's flow
+        collapses onto the samples, so at this resolution it is a histogram of them: cells holding a
+        sample can look nearly right in the dense core, and every other cell is far too low. RMS
+        errors are weighted by the exact posterior.</figcaption>
     </figure>
   </section>
 
